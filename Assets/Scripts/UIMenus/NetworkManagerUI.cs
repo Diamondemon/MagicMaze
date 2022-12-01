@@ -18,13 +18,13 @@ public class NetworkManagerUI : MonoBehaviour
     private void Awake(){
         hostButton.onClick.AddListener(()=>{
             changeHost();
-            NetworkManager.Singleton.StartHost();
-            gameObject.SetActive(false);
+            if (NetworkManager.Singleton.StartHost())
+                gameObject.SetActive(false);
         });
         clientButton.onClick.AddListener(()=>{
             changeHost();
-            NetworkManager.Singleton.StartClient();
-            gameObject.SetActive(false);
+            if (NetworkManager.Singleton.StartClient())
+                gameObject.SetActive(false);
         });
     }
     // Start is called before the first frame update
@@ -37,13 +37,20 @@ public class NetworkManagerUI : MonoBehaviour
     {
     }
 
+    // Changes the host adress
     void changeHost(){
-        NetworkManager.Singleton.GetComponent<UnityTransport>().ConnectionData.Address = hostField.text;
         if (ushort.TryParse(hostField.text, out ushort port)){
+            NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
+                hostField.text,
+                port
+            );
             NetworkManager.Singleton.GetComponent<UnityTransport>().ConnectionData.Port = port;
         }
         else {
-            NetworkManager.Singleton.GetComponent<UnityTransport>().ConnectionData.Port = 8000;
+            NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
+                hostField.text,
+                (ushort)8000
+            );
         }
     }
 }
