@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Square : MonoBehaviour
+public class Square
 {
 
     public enum squareType
@@ -10,29 +10,24 @@ public class Square : MonoBehaviour
         Normal, Timer, Teleporter
     }
 
-    Tile tile;
-
-    //  A PRENDRE EN COMPTE : Les Squares n'ont pas d'orientation définie. Le up/right/left/down dépend de l'orientation de la Tile sur laquelle elle se trouve.
-    public Square up;
+//  A PRENDRE EN COMPTE : Les Squares n'ont pas d'orientation definie. Le up/right/left/down depend de l'orientation de la Tile sur laquelle elle se trouve.
+ /**   public Square up;
     public Square down;
     public Square left;
-    public Square right;
+    public Square right; */
 
-    public Square escalator; //la Square de l'autre coté de l'escalator, vaut null sinon
+    private Tile tile;
+    private Square escalator; //la Square de l'autre cotï¿½ de l'escalator, vaut null sinon
+    private squareType type;
 
-    public squareType type;
-
-
-    // Start is called before the first frame update
-    void Start()
+    public Square (Tile tile, squareType type, Square escalator=null)
     {
-        
+        this.tile = tile;
+        this.type = type;
+        this.escalator = escalator;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public Tile GetTile() { return this.tile; }
+    public Square GetEscalator() { return this.escalator; }
 
 }

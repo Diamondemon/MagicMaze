@@ -28,7 +28,10 @@ public class CharacterController : MonoBehaviour
         
     }
 
-    void Move(Direction.Direction d)
+
+    // A REFAIRE 
+    // TODO
+    public void Move(Direction.Direction d)
     {
         switch (d)
         {
@@ -80,11 +83,11 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    void TakeEscalator()
+    public void TakeEscalator()
     {
-        if (currentPosition.escalator != null)
+        if (currentPosition.GetEscalator() != null)
         {
-            currentPosition = currentPosition.escalator;
+            currentPosition = currentPosition.GetEscalator();
         }
         else 
         {
@@ -92,13 +95,13 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    void Teleport(Square s)
+    public void Teleport(Square s)
     {
         //TODO
     }
 
 
-    void Explore()
+    public void Explore()
     {
         //TODOs
     }

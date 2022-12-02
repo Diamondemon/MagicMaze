@@ -12,28 +12,36 @@ namespace Direction
     }
 }
 
-public class Tile : MonoBehaviour
+public class Tile
 {
     
-    public Square[] squares; //Toutes les cases qui sont dessus
+    private Square[,] squares; //Toutes les cases qui sont dessus
+    private bool isFirstTile; //Vrai si c'est la tuile centre commercial de depart
+    private Direction.Direction orientation; // Correspond a l'orientation de la fleche indiquee sur chaque tuile; vaut null si c'est la firstTile
 
-    public bool isFirstTile; //Vrai si c'est la tuile centre commercial de départ
-
-    private Direction.Direction orientation; // Correspond à l'orientation de la flèche indiquée sur chaque tuile; vaut null si c'est la firstTile
-
-    // Start is called before the first frame update
-    void Start()
+    public Tile(bool isFirstTile, Direction.Direction orientation, Square[,] squares)
     {
-        
+        this.isFirstTile = isFirstTile;
+        this.squares = new Square[4,4];
+
+        if (this.isFirstTile)
+        {
+            this.orientation = Direction.Direction.NORTH;
+        }
+        else 
+        {
+            this.orientation = orientation;
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public Square GetSquare(int x, int y)
     {
-        
+        if (x>=0 && x<4 && y>=0 && y<4)
+        {
+            return this.squares[x,y];
+        }
+        else {return null;}
     }
-
-
 
 
 }

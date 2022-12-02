@@ -32,35 +32,36 @@ public class AbilityCard : MonoBehaviour
         
     }
 
+
     void DoAction(action a, CharacterController c, Square s = null)
     {
         switch(a)
         {
-            case moveDown:
+            case action.moveDown:
                 c.Move(Direction.Direction.SOUTH);
                 break;
             
-            case moveLeft:
+            case action.moveLeft:
                 c.Move(Direction.Direction.WEST);
                 break;
 
-            case moveRight:
+            case action.moveRight:
                 c.Move(Direction.Direction.EAST);
                 break;
 
-            case moveUp:
+            case action.moveUp:
                 c.Move(Direction.Direction.NORTH);
                 break;
 
-            case teleport:
+            case action.teleport:
                 c.Teleport(s);
                 break;
             
-            case escalator:
+            case action.escalator:
                 c.TakeEscalator();
                 break;
 
-            case explore:
+            case action.explore:
                 c.Explore();
                 break; 
 
