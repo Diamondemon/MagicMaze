@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 using Direction;
 
-public class CharacterController : MonoBehaviour
+public class CharacterController : NetworkBehaviour 
 {
 
     public enum Color
@@ -25,7 +26,9 @@ public class CharacterController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKey(KeyCode.L)){
+            transform.position += Vector3.forward * 3* Time.deltaTime;
+        }
     }
 
 
