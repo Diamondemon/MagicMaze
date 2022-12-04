@@ -4,23 +4,30 @@ using UnityEngine;
 
 public class Grid 
 {
-    private int width, height;
-    private float cellSize;
+    public int width, height;
+    public float cellSize;
     
-    private Tile[,] gridArray;
+    public Square[,] gridArray;
 
-    public Grid(int x, int y, float cellSize)
+
+    public Grid(int width, int height)
     {
-        this.width = x;
-        this.height = y;
-        this.cellSize = cellSize;
+        this.width = width;
+        this.height = height;
+        this.cellSize = 1;
 
-        gridArray = new Tile[x, y];
+        gridArray = new Square[width, height];
+
+        for (int x=0; x<gridArray.GetLength(0); x++){
+            for (int y=0;y<gridArray.GetLength(1); y++){ 
+                Debug.DrawLine(new Vector3(x,0.1f,y), new Vector3(x,0.1f,y+1), Color.white, 100f);
+                Debug.DrawLine(new Vector3(x,0.1f,y), new Vector3(x+1,0.1f,y), Color.white, 100f);
+            }
+        }
     }
 
-    public Vector3 GetWorldPosition(int x, int y)
+    Vector3 GetWorldPosition(int x, int y)
     {
         return new Vector3(x,y) * cellSize;
     }
-
 }

@@ -7,27 +7,30 @@ public class Square
 
     public enum squareType
     {
-        Normal, Timer, Teleporter
+        NoGo, Normal, OutOrange, OutGreen, OutPurple, OutYellow, Timer, TeleporterOrange, TeleporterGreen, TeleporterPurple, TeleporterYellow
     }
 
 //  A PRENDRE EN COMPTE : Les Squares n'ont pas d'orientation definie. Le up/right/left/down depend de l'orientation de la Tile sur laquelle elle se trouve.
- /**   public Square up;
+ /**   */
+    public Square up;
     public Square down;
     public Square left;
-    public Square right; */
+    public Square right;
 
-    private Tile tile;
-    private Square escalator; //la Square de l'autre cot� de l'escalator, vaut null sinon
-    private squareType type;
+    public Square escalator; //la Square de l'autre cot� de l'escalator, vaut null sinon
+    public squareType type;
+    
+    public Square () {
+        this.type = squareType.Normal;
+        this.escalator = null;
+    }
 
-    public Square (Tile tile, squareType type, Square escalator=null)
+    public Square (squareType type, Square escalator=null)
     {
-        this.tile = tile;
         this.type = type;
         this.escalator = escalator;
     }
 
-    public Tile GetTile() { return this.tile; }
     public Square GetEscalator() { return this.escalator; }
 
 }

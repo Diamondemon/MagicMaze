@@ -15,14 +15,29 @@ namespace Direction
 public class Tile
 {
     
-    private Square[,] squares; //Toutes les cases qui sont dessus
-    private bool isFirstTile; //Vrai si c'est la tuile centre commercial de depart
-    private Direction.Direction orientation; // Correspond a l'orientation de la fleche indiquee sur chaque tuile; vaut null si c'est la firstTile
+    public Square[,] squares; //Toutes les cases qui sont dessus
+    public bool isFirstTile; //Vrai si c'est la tuile centre commercial de depart
+    public Direction.Direction orientation; // Correspond a l'orientation de la fleche indiquee sur chaque tuile; vaut null si c'est la firstTile
+
+    public Tile(bool isFirstTile, Square.squareType[,] types)
+    {
+        this.isFirstTile = isFirstTile;
+        this.orientation = Direction.Direction.NORTH;
+
+        Square[,] squares = new Square[4,4];
+        for (int i=0; i<4;i++){
+            for (int j=0; j<4; j++){
+               squares[i,j]=new Square (types[i,j]); 
+            }
+        }
+        this.squares = squares;
+
+    }
 
     public Tile(bool isFirstTile, Direction.Direction orientation, Square[,] squares)
     {
         this.isFirstTile = isFirstTile;
-        this.squares = new Square[4,4];
+        this.squares = squares;
 
         if (this.isFirstTile)
         {
@@ -36,7 +51,7 @@ public class Tile
 
     public Square GetSquare(int x, int y)
     {
-        if (x>=0 && x<4 && y>=0 && y<4)
+        if (x>=0 && x<4)
         {
             return this.squares[x,y];
         }
