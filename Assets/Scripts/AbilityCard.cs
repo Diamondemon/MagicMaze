@@ -24,17 +24,11 @@ public class AbilityCard : MonoBehaviour
 
     public action GetAction(int i)
     {
-        if ( i >= this.actions.Length)
-        { 
-            Console.Log("Error : wrong index to getAction")
-            return null;
-        }
-
-        return action[i];
+        return actions[i];
     }
 
     //Affiche toutes les actions qu'on peut faire avec le pion selectionne
-    void ShowPossibleAction(CharacterController pawn, PlayerController player)
+    void ShowPossibleAction(PawnController pawn, PlayerController player)
     {
         Square pawPos = pawn.currentPosition;
 
@@ -47,7 +41,15 @@ public class AbilityCard : MonoBehaviour
 
                 // On se contente des cas ou les actions sont "bouger dans une des 4 directions"
                 // soit moveLeft, moveRight, moveUp, moveDown
+                Square nextSquare = GetNextSquareByAction(a, pawPos);
+                while(nextSquare.type != Square.squareType.NoGo)
+                {
+                    //Higlights Square;
 
+                    //AddOnClick("Move");
+
+                    nextSquare = GetNextSquareByAction(a, nextSquare);
+                }
 
 
             }
@@ -55,12 +57,22 @@ public class AbilityCard : MonoBehaviour
     }
 
 
-    // Prend en entree une square
+    // Prend en entree une square et une action (suppose un moveLeft moveRight etc.), et renvoie la case voisine a cette direction
     Square GetNextSquareByAction(action a, Square s){
         switch(a)
         {
             case action.moveDown:
-                return 
+                return s.down;
+            case action.moveLeft:
+                return s.left;
+            case action.moveUp:
+                return s.up;
+            case action.moveRight:
+                return s.right;
+
+            default:
+                Debug.Log("error : action invalide dans GetNextSquareByAction");
+                return null;
         }
     }
 
