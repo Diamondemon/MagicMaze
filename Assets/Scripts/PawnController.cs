@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Netcode;
 using Direction;
 
-public class CharacterController : NetworkBehaviour 
+public class PawnController : NetworkBehaviour 
 {
 
     public enum Color
@@ -27,8 +27,13 @@ public class CharacterController : NetworkBehaviour
     void Update()
     {
         if (Input.GetKey(KeyCode.L)){
-            transform.position += Vector3.forward * 3* Time.deltaTime;
+            testMoveServerRpc();
         }
+    }
+
+    [ServerRpc]
+    public void testMoveServerRpc(){
+        transform.position += Vector3.forward * 3* Time.deltaTime;
     }
 
 

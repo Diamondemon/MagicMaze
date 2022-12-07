@@ -65,7 +65,7 @@ public class AbilityCard : MonoBehaviour
     }
 
 
-    void DoAction(action a, CharacterController c, Square s = null)
+    void DoAction(action a, PawnController c, Square s = null)
     {
         switch(a)
         {
