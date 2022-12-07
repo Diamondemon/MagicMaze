@@ -17,13 +17,14 @@ public class NetworkManagerUI : MonoBehaviour
         hostButton.onClick.AddListener(()=>{
             this.changeHost();
             if (NetworkManager.Singleton.StartHost()){
-                SceneManager.LoadScene("GameScene");
+                NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
             }
         });
         clientButton.onClick.AddListener(()=>{
             this.changeHost();
             if (NetworkManager.Singleton.StartClient()){
-                SceneManager.LoadScene("GameScene");
+                //SceneManager.LoadScene("GameScene");
+                
             }
         });
     }
