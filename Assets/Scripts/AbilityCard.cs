@@ -18,18 +18,50 @@ public class AbilityCard : MonoBehaviour
         explore
     }
 
-    public action[] actions;
+    private action[] actions;
 
-    // Start is called before the first frame update
-    void Start()
+    public action[] GetActions(){ return this.actions; }
+
+    public action GetAction(int i)
     {
-        
+        if ( i >= this.actions.Length)
+        { 
+            Console.Log("Error : wrong index to getAction")
+            return null;
+        }
+
+        return action[i];
     }
 
-    // Update is called once per frame
-    void Update()
+    //Affiche toutes les actions qu'on peut faire avec le pion selectionne
+    void ShowPossibleAction(CharacterController pawn, PlayerController player)
     {
-        
+        Square pawPos = pawn.currentPosition;
+
+        foreach (action a in player.abilityCard.GetActions())
+        {
+            if(a == action.escalator || a == action.explore || a == action.teleport)
+            {
+                //On est pas cense passer par la, vu qu'on utilise pas ces actions 
+            } else {
+
+                // On se contente des cas ou les actions sont "bouger dans une des 4 directions"
+                // soit moveLeft, moveRight, moveUp, moveDown
+
+
+
+            }
+        }
+    }
+
+
+    // Prend en entree une square
+    Square GetNextSquareByAction(action a, Square s){
+        switch(a)
+        {
+            case action.moveDown:
+                return 
+        }
     }
 
 
