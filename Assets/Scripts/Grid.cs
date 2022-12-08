@@ -16,6 +16,8 @@ public class Grid
         this.height = height;
         this.cellSize = 1;
 
+
+
         gridArray = new Square[width, height];
 
         for (int x=0; x<gridArray.GetLength(0); x++){

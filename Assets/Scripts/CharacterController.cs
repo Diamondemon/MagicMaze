@@ -100,13 +100,44 @@ public class CharacterController : NetworkBehaviour
 
     public void Teleport(Square s)
     {
-        //TODO
+        switch(color)
+        {
+            case Color.yellow:
+            if (s.type == Square.squareType.TeleporterYellow)
+            {
+                this.currentPosition = s;
+            } else { Debug.Log("Error : yellow character tried to teleport to a invalid position"); }
+            break;
+
+            case Color.green:
+            if (s.type == Square.squareType.TeleporterGreen)
+            {
+                this.currentPosition = s;
+            } else { Debug.Log("Error : green character tried to teleport to a invalid position"); }
+            break;
+
+            case Color.orange:
+            if (s.type == Square.squareType.TeleporterOrange)
+            {
+                this.currentPosition = s;
+            } else { Debug.Log("Error : orange character tried to teleport to a invalid position"); }
+            break;
+
+            case Color.purple:
+            if (s.type == Square.squareType.TeleporterPurple)
+            {
+                this.currentPosition = s;
+            } else { Debug.Log("Error : purple character tried to teleport to a invalid position"); }
+            break;
+
+        }
+        
     }
 
 
     public void Explore()
     {
-        //TODOs
+        //TODO
     }
 
 
