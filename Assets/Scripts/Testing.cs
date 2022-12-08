@@ -26,15 +26,15 @@ public class Testing : MonoBehaviour
         List<Tile> tiles = new List<Tile>();
 
         Square.squareType[,] startSquares = {{Square.squareType.TeleporterGreen, Square.squareType.TeleporterOrange, Square.squareType.OutPurple, Square.squareType.Timer}, {Square.squareType.OutYellow, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.OutOrange}, {Square.squareType.NoGo, Square.squareType.OutGreen, Square.squareType.TeleporterYellow, Square.squareType.TeleporterPurple}};
-        Tile startTyle = new Tile (true, startSquares);
+        Tile startTyle = new Tile (true, startSquares, grid);
         tiles.Add(startTyle);
 
         Square.squareType[,] squares2 = {{Square.squareType.TeleporterGreen, Square.squareType.Normal, Square.squareType.OutOrange, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.NoGo}, {Square.squareType.TeleporterPurple, Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal}, {Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal}};
-        Tile tyle2 = new Tile (true, squares2);
+        Tile tyle2 = new Tile (true, squares2, grid);
         tiles.Add(tyle2);
 
         Square.squareType[,] squares3 = {{Square.squareType.NoGo, Square.squareType.Timer, Square.squareType.OutPurple, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.TeleporterOrange}, {Square.squareType.NoGo, Square.squareType.OutYellow, Square.squareType.TeleporterGreen, Square.squareType.NoGo}};
-        Tile tyle3 = new Tile (true, squares3);
+        Tile tyle3 = new Tile (true, squares3, grid);
         tiles.Add(tyle3);
 
         return tiles;

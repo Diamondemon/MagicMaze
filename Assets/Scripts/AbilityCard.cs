@@ -45,6 +45,7 @@ public class AbilityCard : MonoBehaviour
                 while(nextSquare.type != Square.squareType.NoGo)
                 {
                     //Higlights Square;
+                    HighlightSquare(nextSquare);
 
                     //AddOnClick("Move");
 
@@ -54,6 +55,18 @@ public class AbilityCard : MonoBehaviour
 
             }
         }
+    }
+
+    private void HighlightSquare(Square square)
+    {
+
+        //GameObject highlight = new GameObject("SquareHighlight");
+        GameObject prefab = Resources.Load("Assets/Prefabs/SquareHighlight.prefab") as GameObject;
+
+        prefab.transform.localPosition = square.Get3DPosition();
+
+        
+
     }
 
 

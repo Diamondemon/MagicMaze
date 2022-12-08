@@ -19,7 +19,7 @@ public class Tile
     public bool isFirstTile; //Vrai si c'est la tuile centre commercial de depart
     public Direction.Direction orientation; // Correspond a l'orientation de la fleche indiquee sur chaque tuile; vaut null si c'est la firstTile
 
-    public Tile(bool isFirstTile, Square.squareType[,] types)
+    public Tile(bool isFirstTile, Square.squareType[,] types, Grid grid)
     {
         this.isFirstTile = isFirstTile;
         this.orientation = Direction.Direction.NORTH;
@@ -27,7 +27,7 @@ public class Tile
         Square[,] squares = new Square[4,4];
         for (int i=0; i<4;i++){
             for (int j=0; j<4; j++){
-               squares[i,j]=new Square (types[i,j]); 
+               squares[i,j]=new Square (types[i,j], grid); 
             }
         }
         this.squares = squares;
