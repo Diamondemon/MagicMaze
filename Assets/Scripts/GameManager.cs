@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         #if UNITY_EDITOR
-        if (!NetworkManager.Singleton.IsHost){
+        if (!NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsConnectedClient){
             NetworkManager.Singleton.StartHost();
         }
         #endif

@@ -392,7 +392,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2605562607237771987, guid: 5d13dd63cfee1f1878110faab5bb2a0c, type: 3}
       propertyPath: m_Name
-      value: Character
+      value: Pawn
       objectReference: {fileID: 0}
     - target: {fileID: 2605562607237771997, guid: 5d13dd63cfee1f1878110faab5bb2a0c, type: 3}
       propertyPath: m_Enabled
