@@ -60,11 +60,11 @@ public class Testing : MonoBehaviour
         tiles.Add(tyle3);
 
         Square.squareType[,] squares4 = {{Square.squareType.NoGo, Square.squareType.TeleporterOrange, Square.squareType.NoGo, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Timer, Square.squareType.NoGo}, {Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.OutPurple}, {Square.squareType.NoGo, Square.squareType.OutGreen, Square.squareType.NoGo, Square.squareType.TeleporterYellow}};
-        Tile tyle4 = new Tile (false, squares4, "Plane.004");
+        Tile tyle4 = new Tile (false, squares4, "Plane.004", grid);
         tiles.Add(tyle4);
 
         Square.squareType[,] squares5 = {{Square.squareType.NoGo, Square.squareType.TeleporterPurple, Square.squareType.OutYellow, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Timer, Square.squareType.OutOrange}, {Square.squareType.NoGo, Square.squareType.OutGreen, Square.squareType.Normal, Square.squareType.Normal}};
-        Tile tyle5 = new Tile (false, squares5, "Plane.005");
+        Tile tyle5 = new Tile (false, squares5, "Plane.005", grid);
         tiles.Add(tyle5);
 
         return tiles;
@@ -137,7 +137,7 @@ public class Testing : MonoBehaviour
         Square[,] newSquares = new Square [4,4];
         for (int i=0;i<4;i++){
             for (int j=0;j<4;j++){
-                newSquares[i,j] = new Square (tile.squares[3-j,i].type);
+                newSquares[i,j] = new Square (tile.squares[3-j,i].type, 3-j, i);
             }
         }
         Tile newTile = new Tile (false, newSquares, tile.meshName);

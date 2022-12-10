@@ -43,6 +43,16 @@ public class Square
         this.y = y;
     }
 
+    public Square (squareType type, int x, int y, Square escalator=null)
+    {
+        Debug.LogWarning("Creation d'un Square avec son parametre grid null");
+        this.type = type;
+        this.escalator = escalator;
+        this.grid = null;
+        this.x = x;
+        this.y = y;
+    }
+
     public Square GetEscalator() { return this.escalator; }
 
 
