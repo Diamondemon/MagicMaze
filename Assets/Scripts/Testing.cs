@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Testing : MonoBehaviour
 {
@@ -8,13 +9,20 @@ public class Testing : MonoBehaviour
     List<Tile> tiles;
     List<Tile> tilesPile;
     
+
     // Start is called before the first frame update
     private void Start()
     {
+        AbilityCard abCardTest = new AbilityCard(moveUp:true);
+        PawnController pawn = new PawnController();
+
         tiles = createTiles();
         tilesPile = tiles;
         placeFirstTile (22, 22, grid, tilesPile);
         generateText (grid);
+
+        pawn.currentPosition = grid.GetSquare(22,22);
+        abCardTest.ShowPossibleAction(pawn);
     }
 
     // Update is called once per frame

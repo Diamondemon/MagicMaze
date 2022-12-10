@@ -18,9 +18,33 @@ public class AbilityCard : MonoBehaviour
         explore
     }
 
-    private action[] actions;
+    private List<action> actions;
 
-    public action[] GetActions(){ return this.actions; }
+    public AbilityCard(bool moveRight=false, bool moveLeft=false, bool moveUp = false, bool moveDown=false)
+    {
+        this.actions = new List<action>();
+
+        Debug.Log("ON CREE UNE NOUVELLE ABILITY CARD");
+        if(moveRight)
+            this.AddAction(action.moveRight);
+
+        if(moveLeft)
+            this.AddAction(action.moveLeft);
+
+        if(moveUp)
+            this.AddAction(action.moveUp);
+
+        if(moveDown)
+            this.AddAction(action.moveDown);
+
+    }
+
+    private void AddAction(action a)
+    {
+        this.actions.Add(a);
+    }
+
+    public action[] GetActions(){ return this.actions.ToArray(); }
 
     public action GetAction(int i)
     {
@@ -28,11 +52,11 @@ public class AbilityCard : MonoBehaviour
     }
 
     //Affiche toutes les actions qu'on peut faire avec le pion selectionne
-    void ShowPossibleAction(PawnController pawn, PlayerController player)
+    public void ShowPossibleAction(PawnController pawn)
     {
         Square pawPos = pawn.currentPosition;
 
-        foreach (action a in player.abilityCard.GetActions())
+        foreach (action a in actions)
         {
             if(a == action.escalator || a == action.explore || a == action.teleport)
             {

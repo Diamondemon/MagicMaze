@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,5 +32,14 @@ public class Grid
     public Vector3 GetWorldPosition(int x, int y)
     {
         return new Vector3(x,0.1f,y) * cellSize;
+    }
+
+    internal Square GetSquare(int x, int y)
+    {
+        if(x>=0 && x <width && y>=0 && y<height)
+        {
+            return gridArray[x,y];
+        } 
+        else { return null; }
     }
 }

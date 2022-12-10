@@ -15,7 +15,9 @@ public class PawnController : NetworkBehaviour
     public Color color;
     public Square currentPosition;
 
-    
+    public PawnController(){
+        
+    }
 
     // Start is called before the first frame update
     void Start()
