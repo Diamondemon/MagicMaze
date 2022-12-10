@@ -18,6 +18,9 @@ public class Square
     public Square left;
     public Square right;
 
+    public int x { get; private set; }
+    public int y { get; private set; }
+
     public Grid grid;
 
     public Square escalator; //la Square de l'autre cot� de l'escalator, vaut null sinon
@@ -30,18 +33,21 @@ public class Square
         this.grid = null;
     }
 
-    public Square (squareType type, Grid grid, Square escalator=null)
+    public Square (squareType type, Grid grid, int x, int y, Square escalator=null)
     {
+
         this.type = type;
         this.escalator = escalator;
         this.grid = grid;
+        this.x = x;
+        this.y = y;
     }
 
     public Square GetEscalator() { return this.escalator; }
 
+
     public Vector3 Get3DPosition()
     {
-        //TODO
-        throw new NotImplementedException();
+        return this.grid.GetWorldPosition(this.x, this.y);
     }
 }

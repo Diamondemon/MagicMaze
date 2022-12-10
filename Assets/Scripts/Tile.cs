@@ -27,7 +27,7 @@ public class Tile
         Square[,] squares = new Square[4,4];
         for (int i=0; i<4;i++){
             for (int j=0; j<4; j++){
-               squares[i,j]=new Square (types[i,j], grid); 
+               squares[i,j]=new Square (types[i,j], grid, i,j); 
             }
         }
         this.squares = squares;

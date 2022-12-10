@@ -5,7 +5,7 @@ using UnityEngine;
 public class Grid 
 {
     public int width, height;
-    public float cellSize;
+    public float cellSize = 1;
     
     public Square[,] gridArray;
 
@@ -28,8 +28,8 @@ public class Grid
         }
     }
 
-    Vector3 GetWorldPosition(int x, int y)
+    public Vector3 GetWorldPosition(int x, int y)
     {
-        return new Vector3(x,y) * cellSize;
+        return new Vector3(x,0.1f,y) * cellSize;
     }
 }
