@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Sert à bouger la tuile à laquelle ce script est rattaché
 public class TilePosition : MonoBehaviour
 {
     public float speed = 3;

@@ -14,15 +14,17 @@ namespace Direction
 
 public class Tile
 {
-    
+    public string meshName;
     public Square[,] squares; //Toutes les cases qui sont dessus
     public bool isFirstTile; //Vrai si c'est la tuile centre commercial de depart
     public Direction.Direction orientation; // Correspond a l'orientation de la fleche indiquee sur chaque tuile; vaut null si c'est la firstTile
 
-    public Tile(bool isFirstTile, Square.squareType[,] types, Grid grid)
+    public Tile(bool isFirstTile, Square.squareType[,] types, string meshName, Grid grid)
     {
         this.isFirstTile = isFirstTile;
         this.orientation = Direction.Direction.NORTH;
+        // Permet de relier la tuile avec son avatar in game par le nom du mesh. 
+        this.meshName = meshName;
 
         Square[,] squares = new Square[4,4];
         for (int i=0; i<4;i++){
@@ -34,19 +36,11 @@ public class Tile
 
     }
 
-    public Tile(bool isFirstTile, Direction.Direction orientation, Square[,] squares)
+    public Tile(bool isFirstTile, Square[,] squares, string meshName)
     {
         this.isFirstTile = isFirstTile;
         this.squares = squares;
-
-        if (this.isFirstTile)
-        {
-            this.orientation = Direction.Direction.NORTH;
-        }
-        else 
-        {
-            this.orientation = orientation;
-        }
+        this.meshName = meshName;
     }
 
     public Square GetSquare(int x, int y)
