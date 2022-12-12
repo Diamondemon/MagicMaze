@@ -1,28 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using Random = System.Random;
 
 // Script principal du jeu, à attache sur n'importe quel object du jeu (par exemple un Empty qui ne sert qu'à ça)
-
 
 public class Testing : MonoBehaviour
 {
     Grid grid = new Grid (48,48);
     List<Tile> tiles;
     List<Tile> tilesPile;
-    
-
+     
     // Start is called before the first frame update
     private void Start()
     {
-        AbilityCard abCardTest = new AbilityCard(moveUp:true);
-        PawnController pawn = new PawnController();
-
         tiles = createTiles();
         // Creation des tuiles correspondant aux tuiles du jeu
         tilesPile = tiles;
         tilesPile = placeFirstTile (22, 22, grid, tilesPile);
+        tilesPile = shuffle(tilesPile);
         grid = extendMaze(23, 22, grid, tilesPile);
         tilesPile.RemoveAt(0);
         grid = extendMaze(22, 24, grid, tilesPile);
@@ -34,9 +30,6 @@ public class Testing : MonoBehaviour
 
 //  generateText utilisé pour debugger
         generateText (grid);
-
-        pawn.currentPosition = grid.GetSquare(22,22);
-        abCardTest.ShowPossibleAction(pawn);
     }
 
     // Update is called once per frame
@@ -48,24 +41,44 @@ public class Testing : MonoBehaviour
         List<Tile> tiles = new List<Tile>();
 
         Square.squareType[,] startSquares = {{Square.squareType.TeleporterGreen, Square.squareType.TeleporterOrange, Square.squareType.OutPurple, Square.squareType.Timer}, {Square.squareType.OutYellow, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.OutOrange}, {Square.squareType.NoGo, Square.squareType.OutGreen, Square.squareType.TeleporterYellow, Square.squareType.TeleporterPurple}};
-        Tile startTyle = new Tile (true, startSquares, "Plane", grid);
+        Tile startTyle = new Tile (true, startSquares, "Plane");
         tiles.Add(startTyle);
 
         Square.squareType[,] squares2 = {{Square.squareType.TeleporterGreen, Square.squareType.Normal, Square.squareType.OutOrange, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.NoGo}, {Square.squareType.TeleporterPurple, Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal}, {Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal}};
-        Tile tyle2 = new Tile (false, squares2, "Plane.002", grid);
+        Tile tyle2 = new Tile (false, squares2, "Plane.002");
         tiles.Add(tyle2);
 
         Square.squareType[,] squares3 = {{Square.squareType.NoGo, Square.squareType.Timer, Square.squareType.OutPurple, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.TeleporterOrange}, {Square.squareType.NoGo, Square.squareType.OutYellow, Square.squareType.TeleporterGreen, Square.squareType.NoGo}};
-        Tile tyle3 = new Tile (false, squares3, "Plane.003", grid);
+        Tile tyle3 = new Tile (false, squares3, "Plane.003");
         tiles.Add(tyle3);
 
         Square.squareType[,] squares4 = {{Square.squareType.NoGo, Square.squareType.TeleporterOrange, Square.squareType.NoGo, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Timer, Square.squareType.NoGo}, {Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.OutPurple}, {Square.squareType.NoGo, Square.squareType.OutGreen, Square.squareType.NoGo, Square.squareType.TeleporterYellow}};
-        Tile tyle4 = new Tile (false, squares4, "Plane.004", grid);
+        Tile tyle4 = new Tile (false, squares4, "Plane.004");
         tiles.Add(tyle4);
 
         Square.squareType[,] squares5 = {{Square.squareType.NoGo, Square.squareType.TeleporterPurple, Square.squareType.OutYellow, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Timer, Square.squareType.OutOrange}, {Square.squareType.NoGo, Square.squareType.OutGreen, Square.squareType.Normal, Square.squareType.Normal}};
-        Tile tyle5 = new Tile (false, squares5, "Plane.005", grid);
+        Tile tyle5 = new Tile (false, squares5, "Plane.005");
         tiles.Add(tyle5);
+
+        Square.squareType[,] squares6 = {{Square.squareType.TeleporterPurple, Square.squareType.NoGo, Square.squareType.OutOrange, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo}, {Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.OutGreen}, {Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.NoGo}};
+        Tile tyle6 = new Tile (false, squares6, "Plane.006");
+        tiles.Add(tyle6);
+
+        Square.squareType[,] squares7 = {{Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.Normal}, {Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.TeleporterOrange, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.OutYellow, Square.squareType.Normal, Square.squareType.Normal}};
+        Tile tyle7 = new Tile (false, squares7, "Plane.007");
+        tiles.Add(tyle7);
+
+        Square.squareType[,] squares8 = {{Square.squareType.TeleporterGreen, Square.squareType.NoGo, Square.squareType.OutPurple, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.TeleporterOrange}, {Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.NoGo}};
+        Tile tyle8 = new Tile (false, squares8, "Plane.008");
+        tiles.Add(tyle8);
+
+        Square.squareType[,] squares9 = {{Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.NoGo}, {Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.TeleporterGreen}, {Square.squareType.TeleporterYellow, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo}};
+        Tile tyle9 = new Tile (false, squares9, "Plane.009");
+        tiles.Add(tyle9);
+
+        Square.squareType[,] squares10 = {{Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.OutOrange, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.TeleporterYellow, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.OutPurple, Square.squareType.Normal, Square.squareType.Normal}};
+        Tile tyle10 = new Tile (false, squares10, "Plane.010");
+        tiles.Add(tyle10);
 
         return tiles;
     }
@@ -78,6 +91,19 @@ public class Testing : MonoBehaviour
         }
         tilePile.RemoveAt(0);
         return tilePile;
+    }
+
+    List<Tile> shuffle(List<Tile> tiles){
+        var rng = new Random();
+        int n = tiles.Count;  
+        while (n > 1) {  
+            n--;  
+            int k = rng.Next(n + 1);  
+            Tile tile = tiles[k];  
+            tiles[k] = tiles[n];  
+            tiles[n] = tile;  
+        }
+        return tiles;
     }
 
 //Ajoute la tuile à la grille du jeu (équivalent de poser une tuile dans la vraie vie)
@@ -137,7 +163,7 @@ public class Testing : MonoBehaviour
         Square[,] newSquares = new Square [4,4];
         for (int i=0;i<4;i++){
             for (int j=0;j<4;j++){
-                newSquares[i,j] = new Square (tile.squares[3-j,i].type, 3-j, i);
+                newSquares[i,j] = new Square (tile.squares[3-j,i].type);
             }
         }
         Tile newTile = new Tile (false, newSquares, tile.meshName);

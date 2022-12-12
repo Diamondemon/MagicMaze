@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class MainMenuUI : MonoBehaviour
 {
@@ -36,11 +35,5 @@ public class MainMenuUI : MonoBehaviour
         mainButtonsPanel.SetActive(false);
         networkManagerPanel.SetActive(false);
         optionsPanel.SetActive(true);
-    }
-
-
-    //DEBUG FUNCTION
-    public void DisplayGameScene(){
-        SceneManager.LoadScene("GameScene");
     }
 }

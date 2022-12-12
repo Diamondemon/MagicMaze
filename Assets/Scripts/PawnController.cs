@@ -9,20 +9,17 @@ public class PawnController : NetworkBehaviour
 
     public enum Color
     {
-        yellow, orange, green, purple
+        yellow, red, green, blue
     }
 
-    public Color color;
+    public int x;
+    public int y;
+    [SerializeField] public Color color;
     public Square currentPosition;
-
-    public PawnController(){
-        
-    }
 
     // Start is called before the first frame update
     void Start()
     {
-        
     }
 
     // Update is called once per frame
@@ -38,7 +35,13 @@ public class PawnController : NetworkBehaviour
         transform.position += Vector3.forward * 3* Time.deltaTime;
     }
 
-
+    public void moveTo(int x, int y, Grid grid){
+        Vector3 newPosition = new Vector3(x+0.5f, 0, y+0.5f);
+        transform.position = newPosition;
+        this.currentPosition = grid.gridArray[x,y];
+        this.x = x;
+        this.y = y;
+    }
     // A REFAIRE 
     // TODO
     public void Move(Direction.Direction d)
@@ -107,44 +110,13 @@ public class PawnController : NetworkBehaviour
 
     public void Teleport(Square s)
     {
-        switch(color)
-        {
-            case Color.yellow:
-            if (s.type == Square.squareType.TeleporterYellow)
-            {
-                this.currentPosition = s;
-            } else { Debug.Log("Error : yellow character tried to teleport to a invalid position"); }
-            break;
-
-            case Color.green:
-            if (s.type == Square.squareType.TeleporterGreen)
-            {
-                this.currentPosition = s;
-            } else { Debug.Log("Error : green character tried to teleport to a invalid position"); }
-            break;
-
-            case Color.orange:
-            if (s.type == Square.squareType.TeleporterOrange)
-            {
-                this.currentPosition = s;
-            } else { Debug.Log("Error : orange character tried to teleport to a invalid position"); }
-            break;
-
-            case Color.purple:
-            if (s.type == Square.squareType.TeleporterPurple)
-            {
-                this.currentPosition = s;
-            } else { Debug.Log("Error : purple character tried to teleport to a invalid position"); }
-            break;
-
-        }
-        
+        //TODO
     }
 
 
     public void Explore()
     {
-        //TODO
+        //TODOs
     }
 
 
