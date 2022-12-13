@@ -33,13 +33,7 @@ public class Tile
             }
         }
         this.squares = squares;
-        for (int i=0; i<4; i++){
-            this.squares[i,3].up = new Square(Square.squareType.NoGo);
-            this.squares[i,0].down = new Square(Square.squareType.NoGo);
-
-            this.squares[0,i].left = new Square(Square.squareType.NoGo);
-            this.squares[3,i].right = new Square(Square.squareType.NoGo);
-        }
+        setBasicNeighbours();
         
 
     }

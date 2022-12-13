@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 using Direction;
 
-public class AbilityCard : MonoBehaviour
+public class AbilityCard
 {
 
     public enum action

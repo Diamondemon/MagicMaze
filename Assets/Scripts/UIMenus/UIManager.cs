@@ -32,4 +32,13 @@ public class UIManager : MonoBehaviour
         escapeMenu.SetActive(false);
     }
 
+    public void ToggleEscapeMenu(){
+        if (escapeMenu.activeInHierarchy){
+            HideEscapeMenu();
+        }
+        else {
+            DisplayEscapeMenu();
+        }
+    }
+
 }
