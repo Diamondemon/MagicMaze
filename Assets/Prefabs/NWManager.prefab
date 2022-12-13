@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RunInBackground: 1
-  LogLevel: 0
+  LogLevel: 1
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 6285471633337791852}
@@ -94,7 +94,7 @@ MonoBehaviour:
   m_DisconnectTimeoutMS: 30000
   ConnectionData:
     Address: 127.0.0.1
-    Port: 7777
+    Port: 8000
     ServerListenAddress: 
   DebugSimulator:
     PacketDelayMS: 0
