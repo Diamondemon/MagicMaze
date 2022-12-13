@@ -15,15 +15,36 @@ public class LobbyUI : NetworkBehaviour
     private bool escapePressed = false;
     private bool escapeMenuVisible = false;
 
+    NetworkList<ulong> m_connectedClients;
+
     private void Awake() {
         escapeMenu.SetActive(false);
+        m_connectedClients = new NetworkList<ulong>();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        NetworkManager.Singleton.OnClientConnectedCallback += testThat;
     }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (IsClient){
+            m_connectedClients.OnListChanged += Client_ChangePlayerProfiles;
+        }
+        if (IsHost)
+        {
+            m_connectedClients.Add(NetworkManager.Singleton.LocalClientId);
+        }
+        if (IsServer)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback += Server_AddPlayerToList;
+            NetworkManager.Singleton.OnClientDisconnectCallback += Server_RemovePlayerFromList;
+        }
+    }
+
+
 
     // Update is called once per frame
     void Update()
@@ -38,25 +59,23 @@ public class LobbyUI : NetworkBehaviour
         }
         else if (escapePressed) escapePressed = false;
 
-        if (Input.GetKey(KeyCode.T)){
-            SpawnPlayerProfileClientRpc();
-        }
     }
 
-    private void testThat(ulong clientId){
-        SpawnPlayerProfileClientRpc();
+    private void Server_AddPlayerToList(ulong clientId){
+        m_connectedClients.Add(clientId);
     }
 
-    [ClientRpc]
-    private void SpawnPlayerProfileClientRpc(){
+    private void Server_RemovePlayerFromList(ulong clientId){
+        m_connectedClients.Remove(clientId);
+    }
 
-            Debug.Log("I am called once "+
-        NetworkManager.Singleton.LocalClientId);
+    private void Client_ChangePlayerProfiles(NetworkListEvent<ulong> changeEvent){
+
         foreach (Transform child in content){
             GameObject.Destroy(child.gameObject);
         }
-        foreach (ulong id in NetworkManager.Singleton.ConnectedClientsIds){
-            Debug.Log("I am called aah ");
+
+        foreach (ulong id in m_connectedClients){
             GameObject profilePanel = Instantiate(playerProfilePrefab,content);
             TextMeshProUGUI text = profilePanel.GetComponentInChildren<TextMeshProUGUI>();
             text.text = "Player "+id + (id == NetworkManager.Singleton.LocalClientId? " (you)":"");
@@ -66,7 +85,7 @@ public class LobbyUI : NetworkBehaviour
     public override void OnDestroy() {
         base.OnDestroy();
         if (NetworkManager.Singleton == null) return;
-        NetworkManager.Singleton.OnClientConnectedCallback -= testThat;
+        if (IsServer || IsHost) NetworkManager.Singleton.OnClientConnectedCallback -= Server_AddPlayerToList;
     }
 
     public void DisplayEscapeMenu(){
