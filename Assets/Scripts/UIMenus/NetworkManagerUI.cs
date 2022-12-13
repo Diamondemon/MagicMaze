@@ -17,7 +17,7 @@ public class NetworkManagerUI : MonoBehaviour
         hostButton.onClick.AddListener(()=>{
             this.changeHost();
             if (NetworkManager.Singleton.StartHost()){
-                NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+                NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
             }
         });
         clientButton.onClick.AddListener(()=>{
