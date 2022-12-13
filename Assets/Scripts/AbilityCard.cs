@@ -41,6 +41,10 @@ public class AbilityCard : INetworkSerializable, System.IEquatable<AbilityCard>
 
     }
 
+    public AbilityCard(){
+        this.actions = new List<Action>();
+    }
+
     private void AddAction(Action a)
     {
         this.actions.Add(a);

@@ -27,14 +27,6 @@ public class GameManager : NetworkBehaviour
     List<Tile> tiles;
     List<Tile> tilesPile;
 
-    PlayerController player1;
-    PlayerController player2;
-    PlayerController player3;
-
-    AbilityCard card1;
-    AbilityCard card2;
-    AbilityCard card3;
-
     AbilityCardsNetworkList cards;
 
     PawnController pionVert;
@@ -59,17 +51,21 @@ public class GameManager : NetworkBehaviour
         generateText (grid);
 
         createAbilityCards();
+
+        allowedDestinations = new List<Vector2Int>();
     }
 
     public override void OnNetworkSpawn()
     {
         if (IsServer){
-
+            Server_ShuffleAndTell();
         }
     }
 
     private void Server_ShuffleAndTell(){
-
+        shuffle(cards.cards);
+        cards.SetDirty(true);
+        assignPlayerCardClientRpc();
     }
 
 
@@ -119,8 +115,7 @@ public class GameManager : NetworkBehaviour
                 if (isPawnHere(hitPosition.x, hitPosition.y)){
                     isMovingPiece = true;
                     currentPawn = pawnHere(hitPosition.x, hitPosition.y);
-                    ShowPossibleAction(localPlayer, currentPawn);
-                    Debug.Log(allowedDestinations[0]);
+                    allowedDestinations = ShowPossibleAction(localPlayer, currentPawn);
                 }
             }
 
@@ -143,6 +138,7 @@ public class GameManager : NetworkBehaviour
     }
 
     private void createAbilityCards(){
+        cards = new AbilityCardsNetworkList();
         cards.Add(new AbilityCard(false, true, true, false));
         cards.Add(new AbilityCard(true, false, false, false));
         cards.Add(new AbilityCard(false, false, false, true));
@@ -150,7 +146,7 @@ public class GameManager : NetworkBehaviour
 
     [ClientRpc]
     private void assignPlayerCardClientRpc(ClientRpcParams clientRpcParams = default){
-        // TODO iciiiii
+        Debug.Log($"Gained card {NetworkManager.Singleton.LocalClientId}");
         localPlayer.abilityCard = cards.At((int) NetworkManager.Singleton.LocalClientId);
     }
 
