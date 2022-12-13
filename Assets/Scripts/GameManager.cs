@@ -42,6 +42,7 @@ public class GameManager : MonoBehaviour
     PlayerController currentPlayer;
 
     bool isMovingPiece;
+    List<Vector2Int> allowedDestinations;
 
     // Start is called before the first frame update
     void Start()
@@ -60,7 +61,7 @@ public class GameManager : MonoBehaviour
         isMovingPiece = false;
 
         spawnPawns();
-        currentPlayer = player2;
+        currentPlayer = player1;
 
         #if UNITY_EDITOR
         if (!NetworkManager.Singleton.IsHost){
@@ -90,17 +91,21 @@ public class GameManager : MonoBehaviour
                 if (isPawnHere(hitPosition.x, hitPosition.y)){
                     isMovingPiece = true;
                     currentPawn = pawnHere(hitPosition.x, hitPosition.y);
-                    ShowPossibleAction(currentPlayer, currentPawn);
+                    allowedDestinations = ShowPossibleAction(currentPlayer, currentPawn);
+                    Debug.Log(allowedDestinations[0]);
                 }
             }
 
             if (Input.GetMouseButtonUp(0)){
                 if(isMovingPiece == true) {
-                    currentPawn.moveTo(hitPosition.x, hitPosition.y, grid);
-                    if (checkForExploration(currentPawn, hitPosition.x, hitPosition.y)){
-                        grid = extendMaze(hitPosition.x, hitPosition.y, grid, tilesPile);
-                        tilesPile.RemoveAt(0);
+                    if (allowedDestinations.Contains(hitPosition)){
+                        currentPawn.moveTo(hitPosition.x, hitPosition.y, grid);
+                        if (checkForExploration(currentPawn, hitPosition.x, hitPosition.y)){
+                            grid = extendMaze(hitPosition.x, hitPosition.y, grid, tilesPile);
+                            tilesPile.RemoveAt(0);
+                        }
                     }
+                    allowedDestinations = new List<Vector2Int>();
                     cleanOverlay();
                 }
             }
@@ -242,15 +247,22 @@ public class GameManager : MonoBehaviour
 
         foreach (Vector3 coordinate in neighbourCoordinates){
             if (grid.gridArray[(int)coordinate[0], (int)coordinate[2]]==null){
+                //if explore top
                 if (coordinate[0]==x & coordinate[2]==y+1){
                     tileMesh.transform.position = new Vector3(coordinate[0]+1, 0, coordinate[2]+2);
                     grid = addTileToGrid((int) coordinate[0]-1, (int) coordinate[2], newTile);
+
+                    grid.gridArray[x,y].up = grid.gridArray[x,y+1];
+                    grid.gridArray[x,y+1].down = grid.gridArray[x,y];
                 }
                 if (coordinate[0]==x+1 & coordinate[2]==y){
                     newTile = rotateTile(newTile);
                     tileMesh.transform.position = new Vector3(coordinate[0]+2, 0, coordinate[2]);
                     tileMesh.transform.Rotate(0, 0, 90);
                     grid = addTileToGrid((int) coordinate[0], (int) coordinate[2]-2, newTile);
+
+                    grid.gridArray[x,y].right = grid.gridArray[x+1,y];
+                    grid.gridArray[x+1,y].left = grid.gridArray[x,y];
                 }
                 if (coordinate[0]==x & coordinate[2]==y-1){
                     newTile = rotateTile(newTile);
@@ -259,6 +271,9 @@ public class GameManager : MonoBehaviour
                     tileMesh.transform.Rotate(0, 0, 90);
                     tileMesh.transform.Rotate(0, 0, 90);
                     grid = addTileToGrid((int) coordinate[0]-2, (int) coordinate[2]-3, newTile);
+
+                    grid.gridArray[x,y].down = grid.gridArray[x,y-1];
+                    grid.gridArray[x,y-1].up = grid.gridArray[x,y];
                 }
                 if (coordinate[0]==x-1 & coordinate[2]==y){
                     newTile = rotateTile(newTile);
@@ -269,6 +284,9 @@ public class GameManager : MonoBehaviour
                     tileMesh.transform.Rotate(0, 0, 90);
                     tileMesh.transform.Rotate(0, 0, 90);
                     grid = addTileToGrid((int) coordinate[0]-3, (int) coordinate[2]-1, newTile);
+
+                    grid.gridArray[x,y].left = grid.gridArray[x-1,y];
+                    grid.gridArray[x-1,y].right = grid.gridArray[x,y];
                 }
             }
         }
@@ -283,6 +301,27 @@ public class GameManager : MonoBehaviour
                 newSquares[i,j] = new Square (tile.squares[3-j,i].type);
             }
         }
+
+        for (int i=0; i<4; i++){
+            newSquares[i,3].up = new Square(Square.squareType.NoGo);
+            newSquares[i,3].down = newSquares[i,2];
+            newSquares[i,2].up = newSquares[i,3];
+            newSquares[i,2].down = newSquares[i,1];
+            newSquares[i,1].up = newSquares[i,2];
+            newSquares[i,1].down = newSquares[i,0];
+            newSquares[i,0].up = newSquares[i,1];
+            newSquares[i,0].down = new Square(Square.squareType.NoGo);
+
+            newSquares[0,i].left = new Square(Square.squareType.NoGo);
+            newSquares[0,i].right = newSquares[1,i];
+            newSquares[1,i].left = newSquares[0,i];
+            newSquares[1,i].right = newSquares[2,i];
+            newSquares[2,i].left = newSquares[1,i];
+            newSquares[2,i].right = newSquares[3,i];
+            newSquares[3,i].left = newSquares[2,i];
+            newSquares[3,i].right = new Square(Square.squareType.NoGo);
+        }
+
         Tile newTile = new Tile (false, newSquares, tile.meshName);
         return newTile;
     }
@@ -415,12 +454,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void ShowPossibleAction(PlayerController player, PawnController pawn)
+    public List<Vector2Int> ShowPossibleAction(PlayerController player, PawnController pawn)
     {
         Square square = pawn.currentPosition;
+        Square squareStart = pawn.currentPosition;
         AbilityCard abilityCard = player.abilityCard;
         int x = pawn.x;
         int y = pawn.y;
+        int x0 = x;
+        int y0 = y;
+
+        List<Vector2Int> liste = new List<Vector2Int>();
 
         foreach (AbilityCard.action a in abilityCard.actions)
         {
@@ -434,24 +478,28 @@ public class GameManager : MonoBehaviour
                 // soit moveLeft, moveRight, moveUp, moveDown
                 while(square.type != Square.squareType.NoGo)
                 {
-                    Debug.Log(square.type);
                     showOverlay(x, y);
+                    liste.Add(new Vector2Int(x,y));
                     square = GetNextSquareByAction(a, square);
                     if (a==AbilityCard.action.moveUp){
-                        x+=1;
-                    }
-                    if (a==AbilityCard.action.moveDown){
-                        x-=1;
-                    }
-                    if (a==AbilityCard.action.moveRight){
                         y+=1;
                     }
-                    if (a==AbilityCard.action.moveLeft){
+                    if (a==AbilityCard.action.moveDown){
                         y-=1;
+                    }
+                    if (a==AbilityCard.action.moveRight){
+                        x+=1;
+                    }
+                    if (a==AbilityCard.action.moveLeft){
+                        x-=1;
                     }
                 }
             }
+            square = squareStart;
+            x=x0;
+            y=y0;
         }
+        return liste;
     }
 
     Square GetNextSquareByAction(AbilityCard.action a, Square s){
