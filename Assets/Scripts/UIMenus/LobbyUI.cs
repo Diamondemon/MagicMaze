@@ -4,6 +4,8 @@ using UnityEngine;
 using Unity.Netcode;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
 
 public class LobbyUI : NetworkBehaviour
 {
@@ -11,9 +13,12 @@ public class LobbyUI : NetworkBehaviour
     [SerializeField] Transform content;
     [SerializeField] GameObject playerProfilePrefab;
     [SerializeField] GameObject escapeMenu;
+    [SerializeField] Button playButton;
 
     private bool escapePressed = false;
     private bool escapeMenuVisible = false;
+
+    private const int MIN_PLAYERS_COUNT = 2;
 
     NetworkList<ulong> m_connectedClients;
 
@@ -32,10 +37,14 @@ public class LobbyUI : NetworkBehaviour
         base.OnNetworkSpawn();
         if (IsClient){
             m_connectedClients.OnListChanged += Client_ChangePlayerProfiles;
+            playButton.gameObject.SetActive(false);
         }
         if (IsHost)
         {
             m_connectedClients.Add(NetworkManager.Singleton.LocalClientId);
+            playButton.gameObject.SetActive(true);
+            playButton.interactable = false;
+            m_connectedClients.OnListChanged += Host_VerifyPlayerCount;
         }
         if (IsServer)
         {
@@ -69,6 +78,15 @@ public class LobbyUI : NetworkBehaviour
         m_connectedClients.Remove(clientId);
     }
 
+    private void Host_VerifyPlayerCount(NetworkListEvent<ulong> changeEvent){
+        if (m_connectedClients.Count >= MIN_PLAYERS_COUNT){
+            playButton.interactable = true;
+        }
+        else {
+            playButton.interactable = false;
+        }
+    }
+
     private void Client_ChangePlayerProfiles(NetworkListEvent<ulong> changeEvent){
 
         foreach (Transform child in content){
@@ -83,9 +101,19 @@ public class LobbyUI : NetworkBehaviour
     }
 
     public override void OnDestroy() {
+        if (NetworkManager.Singleton != null){
+            if (IsServer) {
+                NetworkManager.Singleton.OnClientConnectedCallback -= Server_AddPlayerToList;
+                NetworkManager.Singleton.OnClientDisconnectCallback -= Server_RemovePlayerFromList;
+            }
+        }
+
+        if (IsClient){
+            m_connectedClients.OnListChanged -= Client_ChangePlayerProfiles;
+        }
+        
         base.OnDestroy();
-        if (NetworkManager.Singleton == null) return;
-        if (IsServer || IsHost) NetworkManager.Singleton.OnClientConnectedCallback -= Server_AddPlayerToList;
+        
     }
 
     public void DisplayEscapeMenu(){
@@ -109,5 +137,9 @@ public class LobbyUI : NetworkBehaviour
     public void BackToMainMenu(){
         NetworkManager.Singleton.Shutdown();
         SceneManager.LoadScene("MainMenu");
+    }
+
+    public void LaunchGame(){
+        NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
     }
 }
