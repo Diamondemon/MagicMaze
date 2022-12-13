@@ -41,10 +41,10 @@ public class LobbyUI : NetworkBehaviour
         }
         if (IsHost)
         {
-            m_connectedClients.Add(NetworkManager.Singleton.LocalClientId);
-            playButton.gameObject.SetActive(true);
             playButton.interactable = false;
             m_connectedClients.OnListChanged += Host_VerifyPlayerCount;
+            m_connectedClients.Add(NetworkManager.Singleton.LocalClientId);
+            playButton.gameObject.SetActive(true);
         }
         if (IsServer)
         {

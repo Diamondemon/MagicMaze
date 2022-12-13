@@ -12,10 +12,12 @@ public class PawnController : NetworkBehaviour
         yellow, red, green, blue
     }
 
-    public int x;
-    public int y;
+    public NetworkVariable<int> x;
+    public NetworkVariable<int> y;
     [SerializeField] public Color color;
     public Square currentPosition;
+
+    public Grid grid;
 
     // Start is called before the first frame update
     void Start()
@@ -35,12 +37,19 @@ public class PawnController : NetworkBehaviour
         transform.position += Vector3.forward * 3* Time.deltaTime;
     }
 
-    public void moveTo(int x, int y, Grid grid){
+    [ServerRpc(RequireOwnership = false)]
+    public void moveToServerRpc(int x, int y){
+        if (grid == null) return;
         Vector3 newPosition = new Vector3(x+0.5f, 0, y+0.5f);
         transform.position = newPosition;
-        this.currentPosition = grid.gridArray[x,y];
-        this.x = x;
-        this.y = y;
+        this.x.Value = x;
+        this.y.Value = y;
+        changeCurrenPositionClientRpc();
+    }
+
+    [ClientRpc]
+    public void changeCurrenPositionClientRpc(){
+        this.currentPosition = grid.gridArray[x.Value,y.Value];
     }
     // A REFAIRE 
     // TODO
