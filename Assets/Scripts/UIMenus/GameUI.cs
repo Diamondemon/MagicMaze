@@ -7,14 +7,9 @@ using Unity.Netcode;
 
 public class GameUI : NetworkBehaviour 
 {
-    [SerializeField] Button quitButton;
-
+    
     void Awake(){
-        quitButton.onClick.AddListener(() =>{
-            NetworkManager.Singleton.Shutdown();
-            SceneManager.LoadScene("MainMenu");
-        }
-        );
+
     }
     // Start is called before the first frame update
     void Start()

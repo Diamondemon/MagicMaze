@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Material goOverlayMaterial;
     [SerializeField] private Material transparent;
 
+    
+
     private Camera currentCamera;
 
     Grid grid = new Grid (48,48);
@@ -43,6 +45,9 @@ public class GameManager : MonoBehaviour
 
     bool isMovingPiece;
 
+    private bool escapePressed = false;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -63,6 +68,10 @@ public class GameManager : MonoBehaviour
         currentPlayer = player2;
 
         #if UNITY_EDITOR
+        if (NetworkManager.Singleton == null){
+            Debug.Log("Pas de Network manager actif.");
+            return;
+        }
         if (!NetworkManager.Singleton.IsHost){
             NetworkManager.Singleton.StartHost();
         }
@@ -73,8 +82,13 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         if (Input.GetKey(KeyCode.Escape)){
-            uiMgr.DisplayEscapeMenu();
+            if (!escapePressed) {
+                escapePressed = true;
+                uiMgr.ToggleEscapeMenu();
+            }
         }
+        else if (escapePressed) escapePressed = false;
+        
         if (!currentCamera){
             currentCamera=Camera.current;
             return;
@@ -114,6 +128,8 @@ public class GameManager : MonoBehaviour
     }
 
     private void createPlayers(){
+        // TODO iciiiii
+        
         player1 = new PlayerController(card1);
         player2 = new PlayerController(card2);
         player3 = new PlayerController(card3);
@@ -199,7 +215,7 @@ public class GameManager : MonoBehaviour
         return tiles;
     }
 
-//Ajoute la tuile à la grille du jeu (équivalent de poser une tuile dans la vraie vie)
+    //Ajoute la tuile à la grille du jeu (équivalent de poser une tuile dans la vraie vie)
     Grid addTileToGrid(int x, int y, Tile tile){
         for (int i=0; i<4; i++){
             for (int j=0; j<4; j++){
@@ -209,7 +225,7 @@ public class GameManager : MonoBehaviour
         return grid;
     }
 
-//A lancer quand un pion arrive sur une loupe de sa couleur pour poser la première tuile de la pile dans la bonne orientation à l'endroit voulu
+    //A lancer quand un pion arrive sur une loupe de sa couleur pour poser la première tuile de la pile dans la bonne orientation à l'endroit voulu
     bool checkForExploration(PawnController pawn, int x, int y){
         if (grid.gridArray[x,y].type==Square.squareType.OutGreen){
            if (pawn.color==PawnController.Color.green){
@@ -275,7 +291,7 @@ public class GameManager : MonoBehaviour
         return grid;
     } 
 
-//tourne une tuile 
+    //tourne une tuile 
     Tile rotateTile (Tile tile){
         Square[,] newSquares = new Square [4,4];
         for (int i=0;i<4;i++){
@@ -397,6 +413,7 @@ public class GameManager : MonoBehaviour
             return false;
         }
     }
+
     private PawnController pawnHere(int x, int y){
         if (pionBleu.x==x & pionBleu.y==y){
             return pionBleu;
@@ -434,41 +451,44 @@ public class GameManager : MonoBehaviour
                 // soit moveLeft, moveRight, moveUp, moveDown
                 while(square.type != Square.squareType.NoGo)
                 {
-                    Debug.Log(square.type);
                     showOverlay(x, y);
-                    square = GetNextSquareByAction(a, square);
+
                     if (a==AbilityCard.action.moveUp){
-                        x+=1;
-                    }
-                    if (a==AbilityCard.action.moveDown){
-                        x-=1;
-                    }
-                    if (a==AbilityCard.action.moveRight){
                         y+=1;
                     }
-                    if (a==AbilityCard.action.moveLeft){
+                    if (a==AbilityCard.action.moveDown){
                         y-=1;
                     }
+                    if (a==AbilityCard.action.moveRight){
+                        x+=1;
+                    }
+                    if (a==AbilityCard.action.moveLeft){
+                        x-=1;
+                    }
+                    square = GetNextSquare(a, square, x, y);
                 }
             }
+            square = pawn.currentPosition;
         }
     }
 
-    Square GetNextSquareByAction(AbilityCard.action a, Square s){
-        if (a==AbilityCard.action.moveUp){
-            return s.up;
+    Square GetNextSquare(AbilityCard.action a, Square s, int nextX, int nextY){
+
+        if (isPawnHere(nextX, nextY)){
+            return new Square(Square.squareType.NoGo);
         }
-        if (a==AbilityCard.action.moveRight){
-            return s.right;
-        }
-        if (a==AbilityCard.action.moveDown){
-            return s.down;
-        }
-        if (a==AbilityCard.action.moveLeft){
-            return s.left;
-        }
-        else{
-            return new Square(Square.squareType.NoGo);;
+
+        switch (a){
+            case AbilityCard.action.moveUp:
+                return s.up;
+            case AbilityCard.action.moveRight:
+                return s.right;
+            case AbilityCard.action.moveDown:
+                return s.down;
+            case AbilityCard.action.moveLeft:
+                return s.left;
+            default:
+                return new Square(Square.squareType.NoGo);
         }
     }
 }
