@@ -18,7 +18,7 @@ public class LobbyUI : NetworkBehaviour
     private bool escapePressed = false;
     private bool escapeMenuVisible = false;
 
-    private const int MIN_PLAYERS_COUNT = 2;
+    private const int MIN_PLAYERS_COUNT = 1;
 
     NetworkList<ulong> m_connectedClients;
 

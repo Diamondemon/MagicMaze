@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using Direction;
+using Unity.Netcode;
 
-public class AbilityCard
+[Serializable]
+public class AbilityCard : INetworkSerializable, System.IEquatable<AbilityCard>
 {
 
-    public enum action
+    public enum Action
     {
         moveRight,
         moveLeft,
@@ -15,38 +17,42 @@ public class AbilityCard
         moveDown,
         escalator,
         teleport,
-        explore
+        explore,
     }
 
-    public List<action> actions;
+    public List<Action> actions;
 
     public AbilityCard(bool moveRight=false, bool moveLeft=false, bool moveUp = false, bool moveDown=false)
     {
-        this.actions = new List<action>();
+        this.actions = new List<Action>();
 
         Debug.Log("ON CREE UNE NOUVELLE ABILITY CARD");
         if(moveRight)
-            this.AddAction(action.moveRight);
+            this.AddAction(Action.moveRight);
 
         if(moveLeft)
-            this.AddAction(action.moveLeft);
+            this.AddAction(Action.moveLeft);
 
         if(moveUp)
-            this.AddAction(action.moveUp);
+            this.AddAction(Action.moveUp);
 
         if(moveDown)
-            this.AddAction(action.moveDown);
+            this.AddAction(Action.moveDown);
 
     }
 
-    private void AddAction(action a)
+    public AbilityCard(){
+        this.actions = new List<Action>();
+    }
+
+    private void AddAction(Action a)
     {
         this.actions.Add(a);
     }
 
-    public action[] GetActions(){ return this.actions.ToArray(); }
+    public Action[] GetActions(){ return this.actions.ToArray(); }
 
-    public action GetAction(int i)
+    public Action GetAction(int i)
     {
         return actions[i];
     }
@@ -56,9 +62,9 @@ public class AbilityCard
     {
         Square pawPos = pawn.currentPosition;
 
-        foreach (action a in actions)
+        foreach (Action a in actions)
         {
-            if(a == action.escalator || a == action.explore || a == action.teleport)
+            if(a == Action.escalator || a == Action.explore || a == Action.teleport)
             {
                 //On est pas cense passer par la, vu qu'on utilise pas ces actions 
             } else {
@@ -82,16 +88,16 @@ public class AbilityCard
 
 
     // Prend en entree une square et une action (suppose un moveLeft moveRight etc.), et renvoie la case voisine a cette direction
-    Square GetNextSquareByAction(action a, Square s){
+    Square GetNextSquareByAction(Action a, Square s){
         switch(a)
         {
-            case action.moveDown:
+            case Action.moveDown:
                 return s.down;
-            case action.moveLeft:
+            case Action.moveLeft:
                 return s.left;
-            case action.moveUp:
+            case Action.moveUp:
                 return s.up;
-            case action.moveRight:
+            case Action.moveRight:
                 return s.right;
 
             default:
@@ -101,40 +107,68 @@ public class AbilityCard
     }
 
 
-    void DoAction(action a, PawnController c, Square s = null)
+    void DoAction(Action a, PawnController c, Square s = null)
     {
         switch(a)
         {
-            case action.moveDown:
+            case Action.moveDown:
                 c.Move(Direction.Direction.SOUTH);
                 break;
             
-            case action.moveLeft:
+            case Action.moveLeft:
                 c.Move(Direction.Direction.WEST);
                 break;
 
-            case action.moveRight:
+            case Action.moveRight:
                 c.Move(Direction.Direction.EAST);
                 break;
 
-            case action.moveUp:
+            case Action.moveUp:
                 c.Move(Direction.Direction.NORTH);
                 break;
 
-            case action.teleport:
+            case Action.teleport:
                 c.Teleport(s);
                 break;
             
-            case action.escalator:
+            case Action.escalator:
                 c.TakeEscalator();
                 break;
 
-            case action.explore:
+            case Action.explore:
                 c.Explore();
                 break; 
-
-
         }
     }
-    
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        int length = 0;
+        Action[] array;
+
+        if (serializer.IsReader)
+        {
+            var reader = serializer.GetFastBufferReader();
+            reader.ReadValueSafe(out length);
+            array = new Action[length];
+            for (int i=0; i<length; i++){
+                reader.ReadValueSafe(out array[i]);
+            }
+            actions.AddRange(array);
+        }
+        else
+        {
+            array = actions.ToArray();
+            length = array.Length;
+            var writer = serializer.GetFastBufferWriter();
+            writer.WriteValueSafe(length);
+            foreach (Action a in actions){
+                writer.WriteValueSafe(a);
+            }
+        }
+    }
+
+    public bool Equals(AbilityCard other)
+    {
+        return actions.TrueForAll((Action action)=>{return other.actions.Contains(action);});
+    }
 }
