@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Netcode;
 using Random = System.Random;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     [SerializeField] private UIManager uiMgr;
     [SerializeField] public GameObject Bleu;
@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Material goOverlayMaterial;
     [SerializeField] private Material transparent;
 
-    
+    [SerializeField] private PlayerController localPlayer;
 
     private Camera currentCamera;
 
@@ -35,23 +35,21 @@ public class GameManager : MonoBehaviour
     AbilityCard card2;
     AbilityCard card3;
 
+    AbilityCardsNetworkList cards;
+
     PawnController pionVert;
     PawnController pionRouge;
     PawnController pionJaune;
     PawnController pionBleu;
 
     [SerializeField] public PawnController currentPawn;
-    PlayerController currentPlayer;
 
     bool isMovingPiece;
     List<Vector2Int> allowedDestinations;
 
     private bool escapePressed = false;
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
+    private void Awake() {
         tiles = createTiles();
         tilesPile = tiles;
         tilesPile = placeFirstTile (22, 22, tilesPile);
@@ -61,12 +59,28 @@ public class GameManager : MonoBehaviour
         generateText (grid);
 
         createAbilityCards();
-        createPlayers();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer){
+
+        }
+    }
+
+    private void Server_ShuffleAndTell(){
+
+    }
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
 
         isMovingPiece = false;
 
         spawnPawns();
-        currentPlayer = player1;
 
         #if UNITY_EDITOR
         if (NetworkManager.Singleton == null){
@@ -105,7 +119,7 @@ public class GameManager : MonoBehaviour
                 if (isPawnHere(hitPosition.x, hitPosition.y)){
                     isMovingPiece = true;
                     currentPawn = pawnHere(hitPosition.x, hitPosition.y);
-                    allowedDestinations = ShowPossibleAction(currentPlayer, currentPawn);
+                    ShowPossibleAction(localPlayer, currentPawn);
                     Debug.Log(allowedDestinations[0]);
                 }
             }
@@ -121,23 +135,23 @@ public class GameManager : MonoBehaviour
                     }
                     allowedDestinations = new List<Vector2Int>();
                     cleanOverlay();
+                    isMovingPiece = false;
+                    currentPawn = null;
                 }
             }
         }
     }
 
     private void createAbilityCards(){
-        card1 = new AbilityCard(false, true, true, false);
-        card2 = new AbilityCard(true, false, false, false);
-        card3 = new AbilityCard(false, false, false, true);
+        cards.Add(new AbilityCard(false, true, true, false));
+        cards.Add(new AbilityCard(true, false, false, false));
+        cards.Add(new AbilityCard(false, false, false, true));
     }
 
-    private void createPlayers(){
+    [ClientRpc]
+    private void assignPlayerCardClientRpc(ClientRpcParams clientRpcParams = default){
         // TODO iciiiii
-        
-        player1 = new PlayerController(card1);
-        player2 = new PlayerController(card2);
-        player3 = new PlayerController(card3);
+        localPlayer.abilityCard = cards.At((int) NetworkManager.Singleton.LocalClientId);
     }
 
     private void spawnPawns(){
@@ -207,17 +221,17 @@ public class GameManager : MonoBehaviour
         return tilePile;
     }
 
-    List<Tile> shuffle(List<Tile> tiles){
+    List<T> shuffle<T>(List<T> list){
         var rng = new Random();
-        int n = tiles.Count;  
+        int n = list.Count;  
         while (n > 1) {  
             n--;  
             int k = rng.Next(n + 1);  
-            Tile tile = tiles[k];  
-            tiles[k] = tiles[n];  
-            tiles[n] = tile;  
+            T element = list[k];  
+            list[k] = list[n];  
+            list[n] = element;  
         }
-        return tiles;
+        return list;
     }
 
     //Ajoute la tuile à la grille du jeu (équivalent de poser une tuile dans la vraie vie)
@@ -483,9 +497,9 @@ public class GameManager : MonoBehaviour
 
         List<Vector2Int> liste = new List<Vector2Int>();
 
-        foreach (AbilityCard.action a in abilityCard.actions)
+        foreach (AbilityCard.Action a in abilityCard.actions)
         {
-            if(a == AbilityCard.action.escalator || a == AbilityCard.action.explore || a == AbilityCard.action.teleport)
+            if(a == AbilityCard.Action.escalator || a == AbilityCard.Action.explore || a == AbilityCard.Action.teleport)
             {
                 //On est pas cense passer par la, vu qu'on utilise pas ces actions 
 
@@ -497,16 +511,16 @@ public class GameManager : MonoBehaviour
                 {
                     showOverlay(x, y);
                     liste.Add(new Vector2Int(x,y));
-                    if (a==AbilityCard.action.moveUp){
+                    if (a==AbilityCard.Action.moveUp){
                         y+=1;
                     }
-                    if (a==AbilityCard.action.moveDown){
+                    if (a==AbilityCard.Action.moveDown){
                         y-=1;
                     }
-                    if (a==AbilityCard.action.moveRight){
+                    if (a==AbilityCard.Action.moveRight){
                         x+=1;
                     }
-                    if (a==AbilityCard.action.moveLeft){
+                    if (a==AbilityCard.Action.moveLeft){
                         x-=1;
                     }
                     square = GetNextSquare(a, square, x, y);
@@ -519,20 +533,20 @@ public class GameManager : MonoBehaviour
         return liste;
     }
 
-    Square GetNextSquare(AbilityCard.action a, Square s, int nextX, int nextY){
+    Square GetNextSquare(AbilityCard.Action a, Square s, int nextX, int nextY){
 
         if (isPawnHere(nextX, nextY)){
             return new Square(Square.squareType.NoGo);
         }
 
         switch (a){
-            case AbilityCard.action.moveUp:
+            case AbilityCard.Action.moveUp:
                 return s.up;
-            case AbilityCard.action.moveRight:
+            case AbilityCard.Action.moveRight:
                 return s.right;
-            case AbilityCard.action.moveDown:
+            case AbilityCard.Action.moveDown:
                 return s.down;
-            case AbilityCard.action.moveLeft:
+            case AbilityCard.Action.moveLeft:
                 return s.left;
             default:
                 return new Square(Square.squareType.NoGo);
