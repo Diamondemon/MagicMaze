@@ -15,8 +15,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Material goOverlayMaterial;
     [SerializeField] private Material transparent;
 
-    
-
     private Camera currentCamera;
 
     Grid grid = new Grid (48,48);
@@ -46,9 +44,6 @@ public class GameManager : MonoBehaviour
     bool isMovingPiece;
     List<Vector2Int> allowedDestinations;
 
-    private bool escapePressed = false;
-
-
     // Start is called before the first frame update
     void Start()
     {
@@ -69,10 +64,6 @@ public class GameManager : MonoBehaviour
         currentPlayer = player1;
 
         #if UNITY_EDITOR
-        if (NetworkManager.Singleton == null){
-            Debug.Log("Pas de Network manager actif.");
-            return;
-        }
         if (!NetworkManager.Singleton.IsHost){
             NetworkManager.Singleton.StartHost();
         }
@@ -83,13 +74,8 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         if (Input.GetKey(KeyCode.Escape)){
-            if (!escapePressed) {
-                escapePressed = true;
-                uiMgr.ToggleEscapeMenu();
-            }
+            uiMgr.DisplayEscapeMenu();
         }
-        else if (escapePressed) escapePressed = false;
-        
         if (!currentCamera){
             currentCamera=Camera.current;
             return;
@@ -117,6 +103,7 @@ public class GameManager : MonoBehaviour
                         if (checkForExploration(currentPawn, hitPosition.x, hitPosition.y)){
                             grid = extendMaze(hitPosition.x, hitPosition.y, grid, tilesPile);
                             tilesPile.RemoveAt(0);
+                            generateText (grid);
                         }
                     }
                     allowedDestinations = new List<Vector2Int>();
@@ -133,8 +120,6 @@ public class GameManager : MonoBehaviour
     }
 
     private void createPlayers(){
-        // TODO iciiiii
-        
         player1 = new PlayerController(card1);
         player2 = new PlayerController(card2);
         player3 = new PlayerController(card3);
@@ -156,34 +141,56 @@ public class GameManager : MonoBehaviour
 
         Square.squareType[,] startSquares = {{Square.squareType.TeleporterGreen, Square.squareType.TeleporterOrange, Square.squareType.OutPurple, Square.squareType.Timer}, {Square.squareType.OutYellow, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.OutOrange}, {Square.squareType.NoGo, Square.squareType.OutGreen, Square.squareType.TeleporterYellow, Square.squareType.TeleporterPurple}};
         Tile startTyle = new Tile (true, startSquares, "Plane");
+        startTyle.addwall(0,0,0,1);
+        startTyle.addwall(0,1,0,2);
+        startTyle.addwall(0,2,0,3);
+        startTyle.addwall(3,1,3,2);
+        startTyle.addwall(3,2,3,3);
         tiles.Add(startTyle);
 
         Square.squareType[,] squares2 = {{Square.squareType.TeleporterGreen, Square.squareType.Normal, Square.squareType.OutOrange, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.NoGo}, {Square.squareType.TeleporterPurple, Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal}, {Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal}};
         Tile tyle2 = new Tile (false, squares2, "Plane.002");
+        tyle2.addwall(0,0,1,0);
         tiles.Add(tyle2);
 
         Square.squareType[,] squares3 = {{Square.squareType.NoGo, Square.squareType.Timer, Square.squareType.OutPurple, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.TeleporterOrange}, {Square.squareType.NoGo, Square.squareType.OutYellow, Square.squareType.TeleporterGreen, Square.squareType.NoGo}};
         Tile tyle3 = new Tile (false, squares3, "Plane.003");
+        tyle3.addwall(0,1,0,2);
+        tyle3.addwall(0,2,1,2);
+        tyle3.addwall(1,1,1,2);
+        tyle3.addwall(2,1,2,2);
+        tyle3.addwall(3,1,3,2);
+        tyle3.addwall(1,3,2,3);
         tiles.Add(tyle3);
 
         Square.squareType[,] squares4 = {{Square.squareType.NoGo, Square.squareType.TeleporterOrange, Square.squareType.NoGo, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Timer, Square.squareType.NoGo}, {Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.OutPurple}, {Square.squareType.NoGo, Square.squareType.OutGreen, Square.squareType.NoGo, Square.squareType.TeleporterYellow}};
         Tile tyle4 = new Tile (false, squares4, "Plane.004");
+        tyle4.addwall(1,2,2,2);
         tiles.Add(tyle4);
 
         Square.squareType[,] squares5 = {{Square.squareType.NoGo, Square.squareType.TeleporterPurple, Square.squareType.OutYellow, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Timer, Square.squareType.OutOrange}, {Square.squareType.NoGo, Square.squareType.OutGreen, Square.squareType.Normal, Square.squareType.Normal}};
         Tile tyle5 = new Tile (false, squares5, "Plane.005");
+        tyle5.addwall(0,1,0,2);
+        tyle5.addwall(0,2,1,2);
+        tyle5.addwall(1,2,2,2);
+        tyle5.addwall(2,2,3,2);
+        tyle5.addwall(2,2,2,3);
+        tyle5.addwall(1,0,1,1);
         tiles.Add(tyle5);
 
         Square.squareType[,] squares6 = {{Square.squareType.TeleporterPurple, Square.squareType.NoGo, Square.squareType.OutOrange, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo}, {Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.OutGreen}, {Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.NoGo}};
         Tile tyle6 = new Tile (false, squares6, "Plane.006");
+        tyle6.addwall(1,1,1,2);
         tiles.Add(tyle6);
 
         Square.squareType[,] squares7 = {{Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.Normal}, {Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.TeleporterOrange, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.OutYellow, Square.squareType.Normal, Square.squareType.Normal}};
         Tile tyle7 = new Tile (false, squares7, "Plane.007");
+        tyle7.addwall(2,2,2,3);
         tiles.Add(tyle7);
 
         Square.squareType[,] squares8 = {{Square.squareType.TeleporterGreen, Square.squareType.NoGo, Square.squareType.OutPurple, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.TeleporterOrange}, {Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.NoGo}};
         Tile tyle8 = new Tile (false, squares8, "Plane.008");
+        tyle8.addwall(0,2,0,3);
         tiles.Add(tyle8);
 
         Square.squareType[,] squares9 = {{Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo}, {Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.NoGo}, {Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal, Square.squareType.TeleporterGreen}, {Square.squareType.TeleporterYellow, Square.squareType.Normal, Square.squareType.Normal, Square.squareType.NoGo}};
@@ -192,6 +199,7 @@ public class GameManager : MonoBehaviour
 
         Square.squareType[,] squares10 = {{Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.OutOrange, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.NoGo, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.NoGo, Square.squareType.TeleporterYellow, Square.squareType.Normal}, {Square.squareType.Normal, Square.squareType.OutPurple, Square.squareType.Normal, Square.squareType.Normal}};
         Tile tyle10 = new Tile (false, squares10, "Plane.010");
+        tyle10.addwall(2,2,3,2);
         tiles.Add(tyle10);
 
         return tiles;
@@ -220,7 +228,7 @@ public class GameManager : MonoBehaviour
         return tiles;
     }
 
-    //Ajoute la tuile à la grille du jeu (équivalent de poser une tuile dans la vraie vie)
+//Ajoute la tuile à la grille du jeu (équivalent de poser une tuile dans la vraie vie)
     Grid addTileToGrid(int x, int y, Tile tile){
         for (int i=0; i<4; i++){
             for (int j=0; j<4; j++){
@@ -230,7 +238,7 @@ public class GameManager : MonoBehaviour
         return grid;
     }
 
-    //A lancer quand un pion arrive sur une loupe de sa couleur pour poser la première tuile de la pile dans la bonne orientation à l'endroit voulu
+//A lancer quand un pion arrive sur une loupe de sa couleur pour poser la première tuile de la pile dans la bonne orientation à l'endroit voulu
     bool checkForExploration(PawnController pawn, int x, int y){
         if (grid.gridArray[x,y].type==Square.squareType.OutGreen){
            if (pawn.color==PawnController.Color.green){
@@ -309,33 +317,20 @@ public class GameManager : MonoBehaviour
         return grid;
     } 
 
-    //tourne une tuile 
+//tourne une tuile 
     Tile rotateTile (Tile tile){
         Square[,] newSquares = new Square [4,4];
         for (int i=0;i<4;i++){
             for (int j=0;j<4;j++){
                 newSquares[i,j] = new Square (tile.squares[3-j,i].type);
+                newSquares[i,j].up = tile.squares[3-j,i].left;
+                newSquares[i,j].right = tile.squares[3-j,i].up;
+                newSquares[i,j].down = tile.squares[3-j,i].right;
+                newSquares[i,j].left = tile.squares[3-j,i].down;
             }
-        }
-
-        for (int i=0; i<4; i++){
             newSquares[i,3].up = new Square(Square.squareType.NoGo);
-            newSquares[i,3].down = newSquares[i,2];
-            newSquares[i,2].up = newSquares[i,3];
-            newSquares[i,2].down = newSquares[i,1];
-            newSquares[i,1].up = newSquares[i,2];
-            newSquares[i,1].down = newSquares[i,0];
-            newSquares[i,0].up = newSquares[i,1];
             newSquares[i,0].down = new Square(Square.squareType.NoGo);
-
             newSquares[0,i].left = new Square(Square.squareType.NoGo);
-            newSquares[0,i].right = newSquares[1,i];
-            newSquares[1,i].left = newSquares[0,i];
-            newSquares[1,i].right = newSquares[2,i];
-            newSquares[2,i].left = newSquares[1,i];
-            newSquares[2,i].right = newSquares[3,i];
-            newSquares[3,i].left = newSquares[2,i];
-            newSquares[3,i].right = new Square(Square.squareType.NoGo);
         }
 
         Tile newTile = new Tile (false, newSquares, tile.meshName);
@@ -452,7 +447,6 @@ public class GameManager : MonoBehaviour
             return false;
         }
     }
-
     private PawnController pawnHere(int x, int y){
         if (pionBleu.x==x & pionBleu.y==y){
             return pionBleu;
@@ -497,6 +491,7 @@ public class GameManager : MonoBehaviour
                 {
                     showOverlay(x, y);
                     liste.Add(new Vector2Int(x,y));
+                    square = GetNextSquareByAction(a, square);
                     if (a==AbilityCard.action.moveUp){
                         y+=1;
                     }
@@ -509,7 +504,6 @@ public class GameManager : MonoBehaviour
                     if (a==AbilityCard.action.moveLeft){
                         x-=1;
                     }
-                    square = GetNextSquare(a, square, x, y);
                 }
             }
             square = squareStart;
@@ -519,23 +513,21 @@ public class GameManager : MonoBehaviour
         return liste;
     }
 
-    Square GetNextSquare(AbilityCard.action a, Square s, int nextX, int nextY){
-
-        if (isPawnHere(nextX, nextY)){
-            return new Square(Square.squareType.NoGo);
+    Square GetNextSquareByAction(AbilityCard.action a, Square s){
+        if (a==AbilityCard.action.moveUp){
+            return s.up;
         }
-
-        switch (a){
-            case AbilityCard.action.moveUp:
-                return s.up;
-            case AbilityCard.action.moveRight:
-                return s.right;
-            case AbilityCard.action.moveDown:
-                return s.down;
-            case AbilityCard.action.moveLeft:
-                return s.left;
-            default:
-                return new Square(Square.squareType.NoGo);
+        if (a==AbilityCard.action.moveRight){
+            return s.right;
+        }
+        if (a==AbilityCard.action.moveDown){
+            return s.down;
+        }
+        if (a==AbilityCard.action.moveLeft){
+            return s.left;
+        }
+        else{
+            return new Square(Square.squareType.NoGo);;
         }
     }
 }
