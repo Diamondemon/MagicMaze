@@ -26,6 +26,7 @@ public class GameManager : NetworkBehaviour
 
     List<Tile> tiles;
     List<Tile> tilesPile;
+    List<int> tilesPileIndices;
 
     AbilityCardsNetworkList cards;
 
@@ -39,13 +40,14 @@ public class GameManager : NetworkBehaviour
     bool isMovingPiece;
     List<Vector2Int> allowedDestinations;
 
+    private Vector2Int toMovePosition = new Vector2Int();
+
     private bool escapePressed = false;
 
     private void Awake() {
         tiles = createTiles();
         tilesPile = tiles;
-        tilesPile = placeFirstTile (22, 22, tilesPile);
-        tilesPile = shuffle(tilesPile);
+        placeFirstTile (22, 22);
 
         generateTileOverlay ();
         generateText (grid);
@@ -53,12 +55,22 @@ public class GameManager : NetworkBehaviour
         createAbilityCards();
 
         allowedDestinations = new List<Vector2Int>();
+        
+        isMovingPiece = false;
+        initializePawnControllers();
+
     }
 
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
         if (IsServer){
             Server_ShuffleAndTell();
+            tilesPileIndices = new List<int>();
+            for (int i=0; i<tilesPile.Count;i++){
+                tilesPileIndices.Add(i);
+            }
+            shuffle(tilesPileIndices);
         }
     }
 
@@ -72,18 +84,14 @@ public class GameManager : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
-
-        isMovingPiece = false;
 
         spawnPawns();
-
         #if UNITY_EDITOR
         if (NetworkManager.Singleton == null){
             Debug.Log("Pas de Network manager actif.");
             return;
         }
-        if (!NetworkManager.Singleton.IsHost){
+        if (!NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient){
             NetworkManager.Singleton.StartHost();
         }
         #endif
@@ -113,27 +121,39 @@ public class GameManager : NetworkBehaviour
             if (Input.GetMouseButtonDown(0)){
                 cleanOverlay();
                 if (isPawnHere(hitPosition.x, hitPosition.y)){
-                    isMovingPiece = true;
                     currentPawn = pawnHere(hitPosition.x, hitPosition.y);
-                    allowedDestinations = ShowPossibleAction(localPlayer, currentPawn);
+                    if (!currentPawn.isSelected.Value){
+                        currentPawn.ToggleSelectPawnServerRpc(true);
+                    }
                 }
             }
 
             if (Input.GetMouseButtonUp(0)){
                 if(isMovingPiece == true) {
-                    if (allowedDestinations.Contains(hitPosition)){
-                        currentPawn.moveTo(hitPosition.x, hitPosition.y, grid);
-                        if (checkForExploration(currentPawn, hitPosition.x, hitPosition.y)){
-                            grid = extendMaze(hitPosition.x, hitPosition.y, grid, tilesPile);
-                            tilesPile.RemoveAt(0);
-                        }
-                    }
-                    allowedDestinations = new List<Vector2Int>();
-                    cleanOverlay();
-                    isMovingPiece = false;
-                    currentPawn = null;
+                    toMovePosition = hitPosition;
+                    currentPawn.ToggleSelectPawnServerRpc(false);
                 }
             }
+        }
+    }
+
+    [ClientRpc]
+    public void TogglePawnSelectionClientRpc(bool selected, ClientRpcParams clientRpcParams = default){
+        if (selected){
+            isMovingPiece = true;
+            allowedDestinations = ShowPossibleAction(localPlayer, currentPawn);
+        }
+        else {
+            if (allowedDestinations.Contains(toMovePosition)){
+                currentPawn.MoveToServerRpc(toMovePosition.x, toMovePosition.y);
+                if (checkForExploration(currentPawn, toMovePosition.x, toMovePosition.y)){
+                    extendMazeServerRpc(toMovePosition.x, toMovePosition.y);
+                }
+            }
+            allowedDestinations = new List<Vector2Int>();
+            cleanOverlay();
+            isMovingPiece = false;
+            currentPawn = null;
         }
     }
 
@@ -146,19 +166,29 @@ public class GameManager : NetworkBehaviour
 
     [ClientRpc]
     private void assignPlayerCardClientRpc(ClientRpcParams clientRpcParams = default){
-        Debug.Log($"Gained card {NetworkManager.Singleton.LocalClientId}");
         localPlayer.abilityCard = cards.At((int) NetworkManager.Singleton.LocalClientId);
     }
 
-    private void spawnPawns(){
+    private void initializePawnControllers(){
         pionBleu = Bleu.GetComponent<PawnController>();
-        pionBleu.moveTo(23,23, grid);
+        pionBleu.grid = grid;
+        pionBleu.gameManager = this;
         pionJaune = Jaune.GetComponent<PawnController>();
-        pionJaune.moveTo(23,24, grid);
+        pionJaune.grid = grid;
+        pionJaune.gameManager = this;
         pionVert = Vert.GetComponent<PawnController>();
-        pionVert.moveTo(24,23,grid);
+        pionVert.grid = grid;
+        pionVert.gameManager = this;
         pionRouge = Rouge.GetComponent<PawnController>();
-        pionRouge.moveTo(24,24, grid);
+        pionRouge.grid = grid;
+        pionRouge.gameManager = this;
+    }
+
+    private void spawnPawns(){
+        pionBleu.MoveToServerRpc(23,23);
+        pionJaune.MoveToServerRpc(23,24);
+        pionVert.MoveToServerRpc(24,23);
+        pionRouge.MoveToServerRpc(24,24);
     }
 
     private List<Tile> createTiles(){
@@ -207,14 +237,13 @@ public class GameManager : NetworkBehaviour
         return tiles;
     }
 
-    List<Tile> placeFirstTile(int x, int y, List<Tile> tilePile){
+    void placeFirstTile(int x, int y){
         for (int i=0; i<4; i++){
             for (int j=0; j<4; j++){
-                grid.gridArray[x+i,y+j] = tilePile[0].squares[i,j];
+                grid.gridArray[x+i,y+j] = tilesPile[0].squares[i,j];
             }
         }
-        tilePile.RemoveAt(0);
-        return tilePile;
+        tilesPile.RemoveAt(0);
     }
 
     List<T> shuffle<T>(List<T> list){
@@ -264,9 +293,17 @@ public class GameManager : NetworkBehaviour
         }
         return false;
     }
+
+    [ServerRpc(RequireOwnership=false)]
+    void extendMazeServerRpc(int x, int y){
+        int index = tilesPileIndices[0];
+        extendMazeClientRpc(x, y, index);
+        tilesPileIndices.RemoveAt(0);
+    }
     
-    Grid extendMaze(int x, int y, Grid grid, List<Tile> tilePile){
-        Tile newTile = tilePile[0];
+    [ClientRpc]
+    void extendMazeClientRpc(int x, int y, int index){
+        Tile newTile = tilesPile[index];
         GameObject tileMesh = GameObject.Find(newTile.meshName);
         Square currentSquare = grid.gridArray[x,y];
         Vector3[] neighbourCoordinates = {new Vector3 (x+1,0,y), new Vector3 (x,0,y+1), new Vector3 (x-1,0,y), new Vector3 (x,0,y-1)};
@@ -316,7 +353,7 @@ public class GameManager : NetworkBehaviour
                 }
             }
         }
-        return grid;
+        //return grid;
     } 
 
     //tourne une tuile 
@@ -381,7 +418,6 @@ public class GameManager : NetworkBehaviour
 
 //génère des couleurs en fonction du type des cases 
     void generateText (Grid grid){
-        Debug.Log("go");
         for (int x=0; x<grid.gridArray.GetLength(0);x++){
             for (int y=0; y<grid.gridArray.GetLength(1); y++){
                 if (grid.gridArray[x,y] != null) {
@@ -446,16 +482,16 @@ public class GameManager : NetworkBehaviour
             }
     }
     bool isPawnHere(int x, int y){
-        if (pionBleu.x==x & pionBleu.y==y){
+        if (pionBleu.x.Value==x & pionBleu.y.Value==y){
             return true;
         }
-        if (pionVert.x==x & pionVert.y==y){
+        if (pionVert.x.Value==x & pionVert.y.Value==y){
             return true;
         }
-        if (pionJaune.x==x & pionJaune.y==y){
+        if (pionJaune.x.Value==x & pionJaune.y.Value==y){
             return true;
         }
-        if (pionRouge.x==x & pionRouge.y==y){
+        if (pionRouge.x.Value==x & pionRouge.y.Value==y){
             return true;
         }
         else{
@@ -464,16 +500,16 @@ public class GameManager : NetworkBehaviour
     }
 
     private PawnController pawnHere(int x, int y){
-        if (pionBleu.x==x & pionBleu.y==y){
+        if (pionBleu.x.Value==x & pionBleu.y.Value==y){
             return pionBleu;
         }
-        if (pionVert.x==x & pionVert.y==y){
+        if (pionVert.x.Value==x & pionVert.y.Value==y){
             return pionVert;
         }
-        if (pionJaune.x==x & pionJaune.y==y){
+        if (pionJaune.x.Value==x & pionJaune.y.Value==y){
             return pionJaune;
         }
-        if (pionRouge.x==x & pionRouge.y==y){
+        if (pionRouge.x.Value==x & pionRouge.y.Value==y){
             return pionRouge;
         }
         else {
@@ -486,8 +522,8 @@ public class GameManager : NetworkBehaviour
         Square square = pawn.currentPosition;
         Square squareStart = pawn.currentPosition;
         AbilityCard abilityCard = player.abilityCard;
-        int x = pawn.x;
-        int y = pawn.y;
+        int x = pawn.x.Value;
+        int y = pawn.y.Value;
         int x0 = x;
         int y0 = y;
 
