@@ -26,6 +26,7 @@ public class GameManager : NetworkBehaviour
 
     List<Tile> tiles;
     List<Tile> tilesPile;
+    List<int> tilesPileIndices;
 
     AbilityCardsNetworkList cards;
 
@@ -44,8 +45,7 @@ public class GameManager : NetworkBehaviour
     private void Awake() {
         tiles = createTiles();
         tilesPile = tiles;
-        tilesPile = placeFirstTile (22, 22, tilesPile);
-        tilesPile = shuffle(tilesPile);
+        placeFirstTile (22, 22);
 
         generateTileOverlay ();
         generateText (grid);
@@ -55,6 +55,7 @@ public class GameManager : NetworkBehaviour
         allowedDestinations = new List<Vector2Int>();
         
         isMovingPiece = false;
+        initializePawnControllers();
 
     }
 
@@ -62,10 +63,12 @@ public class GameManager : NetworkBehaviour
     {
         if (IsServer){
             Server_ShuffleAndTell();
+            tilesPileIndices = new List<int>();
+            for (int i=0; i<tilesPile.Count;i++){
+                tilesPileIndices.Add(i);
+            }
+            shuffle(tilesPileIndices);
         }
-
-
-        spawnPawns();
     }
 
     private void Server_ShuffleAndTell(){
@@ -79,12 +82,13 @@ public class GameManager : NetworkBehaviour
     void Start()
     {
 
+        spawnPawns();
         #if UNITY_EDITOR
         if (NetworkManager.Singleton == null){
             Debug.Log("Pas de Network manager actif.");
             return;
         }
-        if (!NetworkManager.Singleton.IsHost){
+        if (!NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient){
             NetworkManager.Singleton.StartHost();
         }
         #endif
@@ -125,8 +129,7 @@ public class GameManager : NetworkBehaviour
                     if (allowedDestinations.Contains(hitPosition)){
                         currentPawn.moveToServerRpc(hitPosition.x, hitPosition.y);
                         if (checkForExploration(currentPawn, hitPosition.x, hitPosition.y)){
-                            extendMaze(hitPosition.x, hitPosition.y, tilesPile);
-                            tilesPile.RemoveAt(0);
+                            extendMazeServerRpc(hitPosition.x, hitPosition.y);
                         }
                     }
                     allowedDestinations = new List<Vector2Int>();
@@ -150,19 +153,21 @@ public class GameManager : NetworkBehaviour
         localPlayer.abilityCard = cards.At((int) NetworkManager.Singleton.LocalClientId);
     }
 
-    private void spawnPawns(){
+    private void initializePawnControllers(){
         pionBleu = Bleu.GetComponent<PawnController>();
         pionBleu.grid = grid;
-        Debug.Log("Yup");
-        pionBleu.moveToServerRpc(23,23);
         pionJaune = Jaune.GetComponent<PawnController>();
         pionJaune.grid = grid;
-        pionJaune.moveToServerRpc(23,24);
         pionVert = Vert.GetComponent<PawnController>();
         pionVert.grid = grid;
-        pionVert.moveToServerRpc(24,23);
         pionRouge = Rouge.GetComponent<PawnController>();
         pionRouge.grid = grid;
+    }
+
+    private void spawnPawns(){
+        pionBleu.moveToServerRpc(23,23);
+        pionJaune.moveToServerRpc(23,24);
+        pionVert.moveToServerRpc(24,23);
         pionRouge.moveToServerRpc(24,24);
     }
 
@@ -212,14 +217,13 @@ public class GameManager : NetworkBehaviour
         return tiles;
     }
 
-    List<Tile> placeFirstTile(int x, int y, List<Tile> tilePile){
+    void placeFirstTile(int x, int y){
         for (int i=0; i<4; i++){
             for (int j=0; j<4; j++){
-                grid.gridArray[x+i,y+j] = tilePile[0].squares[i,j];
+                grid.gridArray[x+i,y+j] = tilesPile[0].squares[i,j];
             }
         }
-        tilePile.RemoveAt(0);
-        return tilePile;
+        tilesPile.RemoveAt(0);
     }
 
     List<T> shuffle<T>(List<T> list){
@@ -269,9 +273,17 @@ public class GameManager : NetworkBehaviour
         }
         return false;
     }
+
+    [ServerRpc(RequireOwnership=false)]
+    void extendMazeServerRpc(int x, int y){
+        int index = tilesPileIndices[0];
+        extendMazeClientRpc(x, y, index);
+        tilesPileIndices.RemoveAt(0);
+    }
     
-    void extendMaze(int x, int y, List<Tile> tilePile){
-        Tile newTile = tilePile[0];
+    [ClientRpc]
+    void extendMazeClientRpc(int x, int y, int index){
+        Tile newTile = tilesPile[index];
         GameObject tileMesh = GameObject.Find(newTile.meshName);
         Square currentSquare = grid.gridArray[x,y];
         Vector3[] neighbourCoordinates = {new Vector3 (x+1,0,y), new Vector3 (x,0,y+1), new Vector3 (x-1,0,y), new Vector3 (x,0,y-1)};

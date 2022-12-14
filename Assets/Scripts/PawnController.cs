@@ -27,14 +27,6 @@ public class PawnController : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.L)){
-            testMoveServerRpc();
-        }
-    }
-
-    [ServerRpc]
-    public void testMoveServerRpc(){
-        transform.position += Vector3.forward * 3* Time.deltaTime;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -44,13 +36,14 @@ public class PawnController : NetworkBehaviour
         transform.position = newPosition;
         this.x.Value = x;
         this.y.Value = y;
-        changeCurrenPositionClientRpc();
+        changeCurrentPositionClientRpc();
     }
 
     [ClientRpc]
-    public void changeCurrenPositionClientRpc(){
+    private void changeCurrentPositionClientRpc(){
         this.currentPosition = grid.gridArray[x.Value,y.Value];
     }
+
     // A REFAIRE 
     // TODO
     public void Move(Direction.Direction d)
