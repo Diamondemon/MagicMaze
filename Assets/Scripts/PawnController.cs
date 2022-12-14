@@ -19,6 +19,21 @@ public class PawnController : NetworkBehaviour
 
     public Grid grid;
 
+    public NetworkVariable<bool> isSelected = new NetworkVariable<bool>(false);
+
+    private ulong selectingClient = 0;
+
+    public GameManager gameManager;
+
+    // private uint selectionToken = 1; // May be useful
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (IsServer){
+            isSelected.OnValueChanged += Server_AnimateSelected;
+        }
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -30,18 +45,55 @@ public class PawnController : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void moveToServerRpc(int x, int y){
+    public void MoveToServerRpc(int x, int y){
         if (grid == null) return;
         Vector3 newPosition = new Vector3(x+0.5f, 0, y+0.5f);
         transform.position = newPosition;
         this.x.Value = x;
         this.y.Value = y;
-        changeCurrentPositionClientRpc();
+        ChangeCurrentPositionClientRpc();
     }
 
     [ClientRpc]
-    private void changeCurrentPositionClientRpc(){
+    private void ChangeCurrentPositionClientRpc(){
         this.currentPosition = grid.gridArray[x.Value,y.Value];
+    }
+
+
+    [ServerRpc(RequireOwnership=false)]
+    public void ToggleSelectPawnServerRpc(bool selected, ServerRpcParams serverRpcParams = default){
+        // Select if pawn was not selected already
+        if (!isSelected.Value && selected){
+            isSelected.Value = true;
+            selectingClient = serverRpcParams.Receive.SenderClientId;
+        }
+        // Unselect if the sending client is the one which selected it
+        else if (isSelected.Value && selectingClient == serverRpcParams.Receive.SenderClientId){
+            isSelected.Value = selected;
+        }
+        else {
+            return;
+        }
+
+        ClientRpcParams rpcParams = new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new ulong[]{serverRpcParams.Receive.SenderClientId}
+            }
+        };
+
+        gameManager.TogglePawnSelectionClientRpc(selected, rpcParams);
+    }
+
+    private void Server_AnimateSelected(bool previous, bool selected){
+        if (selected == previous) return;
+        if (selected){
+            transform.position += new Vector3(0,0.5f,0);
+        }
+        else {
+            transform.position -= new Vector3(0,0.5f,0);
+        }
     }
 
     // A REFAIRE 

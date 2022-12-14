@@ -40,6 +40,8 @@ public class GameManager : NetworkBehaviour
     bool isMovingPiece;
     List<Vector2Int> allowedDestinations;
 
+    private Vector2Int toMovePosition = new Vector2Int();
+
     private bool escapePressed = false;
 
     private void Awake() {
@@ -61,6 +63,7 @@ public class GameManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
         if (IsServer){
             Server_ShuffleAndTell();
             tilesPileIndices = new List<int>();
@@ -118,26 +121,39 @@ public class GameManager : NetworkBehaviour
             if (Input.GetMouseButtonDown(0)){
                 cleanOverlay();
                 if (isPawnHere(hitPosition.x, hitPosition.y)){
-                    isMovingPiece = true;
                     currentPawn = pawnHere(hitPosition.x, hitPosition.y);
-                    allowedDestinations = ShowPossibleAction(localPlayer, currentPawn);
+                    if (!currentPawn.isSelected.Value){
+                        currentPawn.ToggleSelectPawnServerRpc(true);
+                    }
                 }
             }
 
             if (Input.GetMouseButtonUp(0)){
                 if(isMovingPiece == true) {
-                    if (allowedDestinations.Contains(hitPosition)){
-                        currentPawn.moveToServerRpc(hitPosition.x, hitPosition.y);
-                        if (checkForExploration(currentPawn, hitPosition.x, hitPosition.y)){
-                            extendMazeServerRpc(hitPosition.x, hitPosition.y);
-                        }
-                    }
-                    allowedDestinations = new List<Vector2Int>();
-                    cleanOverlay();
-                    isMovingPiece = false;
-                    currentPawn = null;
+                    toMovePosition = hitPosition;
+                    currentPawn.ToggleSelectPawnServerRpc(false);
                 }
             }
+        }
+    }
+
+    [ClientRpc]
+    public void TogglePawnSelectionClientRpc(bool selected, ClientRpcParams clientRpcParams = default){
+        if (selected){
+            isMovingPiece = true;
+            allowedDestinations = ShowPossibleAction(localPlayer, currentPawn);
+        }
+        else {
+            if (allowedDestinations.Contains(toMovePosition)){
+                currentPawn.MoveToServerRpc(toMovePosition.x, toMovePosition.y);
+                if (checkForExploration(currentPawn, toMovePosition.x, toMovePosition.y)){
+                    extendMazeServerRpc(toMovePosition.x, toMovePosition.y);
+                }
+            }
+            allowedDestinations = new List<Vector2Int>();
+            cleanOverlay();
+            isMovingPiece = false;
+            currentPawn = null;
         }
     }
 
@@ -156,19 +172,23 @@ public class GameManager : NetworkBehaviour
     private void initializePawnControllers(){
         pionBleu = Bleu.GetComponent<PawnController>();
         pionBleu.grid = grid;
+        pionBleu.gameManager = this;
         pionJaune = Jaune.GetComponent<PawnController>();
         pionJaune.grid = grid;
+        pionJaune.gameManager = this;
         pionVert = Vert.GetComponent<PawnController>();
         pionVert.grid = grid;
+        pionVert.gameManager = this;
         pionRouge = Rouge.GetComponent<PawnController>();
         pionRouge.grid = grid;
+        pionRouge.gameManager = this;
     }
 
     private void spawnPawns(){
-        pionBleu.moveToServerRpc(23,23);
-        pionJaune.moveToServerRpc(23,24);
-        pionVert.moveToServerRpc(24,23);
-        pionRouge.moveToServerRpc(24,24);
+        pionBleu.MoveToServerRpc(23,23);
+        pionJaune.MoveToServerRpc(23,24);
+        pionVert.MoveToServerRpc(24,23);
+        pionRouge.MoveToServerRpc(24,24);
     }
 
     private List<Tile> createTiles(){
@@ -398,7 +418,6 @@ public class GameManager : NetworkBehaviour
 
 //génère des couleurs en fonction du type des cases 
     void generateText (Grid grid){
-        Debug.Log("go");
         for (int x=0; x<grid.gridArray.GetLength(0);x++){
             for (int y=0; y<grid.gridArray.GetLength(1); y++){
                 if (grid.gridArray[x,y] != null) {

@@ -25,8 +25,6 @@ public class AbilityCard : INetworkSerializable, System.IEquatable<AbilityCard>
     public AbilityCard(bool moveRight=false, bool moveLeft=false, bool moveUp = false, bool moveDown=false)
     {
         this.actions = new List<Action>();
-
-        Debug.Log("ON CREE UNE NOUVELLE ABILITY CARD");
         if(moveRight)
             this.AddAction(Action.moveRight);
 
