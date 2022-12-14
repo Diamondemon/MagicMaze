@@ -5,11 +5,9 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
-    public AbilityCard abilityCard;
+    public AbilityCard abilityCard {get; set ;}
 
-    public PlayerController (AbilityCard card){
-        this.abilityCard = card;
-    }
+    
 
     // Start is called before the first frame update
     void Start()
