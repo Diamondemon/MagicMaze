@@ -29,6 +29,11 @@ public class NetworkManagerUI : MonoBehaviour
         });
     }
 
+    private void Start() {
+        hostField.text = NetworkManager.Singleton.GetComponent<UnityTransport>().ConnectionData.Address;
+        portField.text = NetworkManager.Singleton.GetComponent<UnityTransport>().ConnectionData.Port.ToString();
+    }
+
     // Changes the host adress
     void changeHost(){
         if (ushort.TryParse(portField.text, out ushort port)){
