@@ -50,7 +50,6 @@ public class GameManager : NetworkBehaviour
         placeFirstTile (22, 22);
 
         generateTileOverlay ();
-        generateText (grid);
 
         createAbilityCards();
 
@@ -101,8 +100,13 @@ public class GameManager : NetworkBehaviour
     void Update()
     {
         if (Input.GetKey(KeyCode.Escape)){
-            uiMgr.DisplayEscapeMenu();
+            if (!escapePressed) {
+                escapePressed = true;
+                uiMgr.ToggleEscapeMenu();
+            }
         }
+        else if (escapePressed) escapePressed = false;
+
         if (!currentCamera){
             currentCamera=Camera.current;
             return;
@@ -422,34 +426,6 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-//génère des couleurs en fonction du type des cases 
-    void generateText (Grid grid){
-        for (int x=0; x<grid.gridArray.GetLength(0);x++){
-            for (int y=0; y<grid.gridArray.GetLength(1); y++){
-                if (grid.gridArray[x,y] != null) {
-                    if (grid.gridArray[x,y].type == Square.squareType.NoGo){
-                        createText("0", new Vector2(x,y), Color.black);
-                    }
-                    else if (grid.gridArray[x,y].type == Square.squareType.OutPurple){
-                        createText("0", new Vector2(x,y), Color.blue);
-                    }
-                    else if (grid.gridArray[x,y].type == Square.squareType.OutGreen){
-                        createText("0", new Vector2(x,y), Color.green);
-                    }
-                    else if (grid.gridArray[x,y].type == Square.squareType.OutYellow){
-                        createText("0", new Vector2(x,y), Color.yellow);
-                    }
-                    else if (grid.gridArray[x,y].type == Square.squareType.OutOrange){
-                        createText("0", new Vector2(x,y), Color.red);
-                    }
-                    else{
-                        createText("0", new Vector2(x,y), Color.white);
-                    }
-                }
-            }
-        }
-    }
-    
     GameObject createText(string text, Vector2 position, Color color){
         GameObject gameObject = new GameObject("Tile_Text", typeof(TextMesh));
         Transform transform = gameObject.transform;
@@ -560,6 +536,7 @@ public class GameManager : NetworkBehaviour
                     if (a==AbilityCard.Action.moveLeft){
                         x-=1;
                     }
+                    square = GetNextSquare(a, square, x, y);
                 }
             }
             square = squareStart;
