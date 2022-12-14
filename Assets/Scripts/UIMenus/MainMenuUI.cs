@@ -10,6 +10,7 @@ public class MainMenuUI : MonoBehaviour
         mainButtonsPanel.SetActive(true);
         networkManagerPanel.SetActive(false);
         optionsPanel.SetActive(false);
+        QualitySettings.vSyncCount = 1;
     }
 
     public void QuitGame(){
