@@ -92,7 +92,7 @@ public class Tile
         }
     }
 
-    private void addwall(int x1, int y1, int x2, int y2){
+    public void addwall(int x1, int y1, int x2, int y2){
         if (x1==x2){
             if (y1<y2){
                 this.squares[x1,y1].up = new Square(Square.squareType.NoGo);
