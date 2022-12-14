@@ -390,9 +390,6 @@ public class GameManager : NetworkBehaviour
                 newSquares[i,j].down = tile.squares[3-j,i].right;
                 newSquares[i,j].left = tile.squares[3-j,i].down;
             }
-            newSquares[i,3].up = new Square(Square.squareType.NoGo);
-            newSquares[i,0].down = new Square(Square.squareType.NoGo);
-            newSquares[0,i].left = new Square(Square.squareType.NoGo);
         }
 
         Tile newTile = new Tile (false, newSquares, tile.meshName);
